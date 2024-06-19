@@ -1,6 +1,7 @@
 import { GameObj, KaboomCtx } from "kaboom";
 import { Coord2D, Player } from "./libs/definitions";
 import { scale } from "./constants";
+import { SceneStates } from "./states";
 
 
 const LEFT = -1;
@@ -40,7 +41,7 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
         if (player.hp() === 0) {
             // Respawn
             k.destroy(player);
-            k.go("level-1");
+            k.go(SceneStates.scenes[SceneStates.currentScene]);
             return;
         }
 
@@ -65,9 +66,11 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
 
     //Reached the exit door
     player.onCollide("exit", () => {
-        k.go("level-2");
+        SceneStates.currentScene = (SceneStates.currentScene + 1) % SceneStates.scenes.length;
+        k.go(SceneStates.scenes[SceneStates.currentScene]);
     });
 
+    // Effect and hitbox for inhaling
     const inhaleEffect = k.add([
         k.sprite("assets", {anim: "kirbInhaleEffect"}),
         k.pos(),
@@ -95,8 +98,7 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
 
     player.onUpdate(() => {
         if (player.pos.y < 0 || player.pos.y > 2000) {
-            k.go("level-1");
-            console.log("reset");
+            k.go(SceneStates.scenes[SceneStates.currentScene]);
         }
     });
 
@@ -109,9 +111,13 @@ export function setControls(k: KaboomCtx, player: Player) {
     k.onKeyDown((key) => {
         switch (key) {
             case "left":
+                player.flipX = true;
+                player.direction = LEFT;
+                player.move(player.direction * player.speed, 0);
+                break;
             case "right":
-                player.flipX = key === "left";
-                player.direction = (player.flipX ? LEFT : RIGHT);
+                player.flipX = false;
+                player.direction = RIGHT;
                 player.move(player.direction * player.speed, 0);
                 break;
             case "z":
@@ -180,7 +186,7 @@ export function setControls(k: KaboomCtx, player: Player) {
     })
 };
 
-export function makeInhalable(k: KaboomCtx, enemy: GameObj) {
+function makeInhalable(k: KaboomCtx, enemy: GameObj) {
     enemy.onCollide("inhaleZone", () => {
         enemy.isInhalable = true;   
     });
@@ -231,7 +237,7 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
     });
 
     flame.onStateUpdate("jump", async () => {
-        if (flame.isGrounded()) {
+        if (!flame.isJumping()) {
             flame.enterState("idle");
         }
     });
