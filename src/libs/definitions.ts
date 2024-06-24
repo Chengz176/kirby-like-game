@@ -1,4 +1,4 @@
-import { AreaComp, BodyComp, DoubleJumpComp, GameObj, HealthComp, OpacityComp, PosComp, ScaleComp, SpriteComp } from "kaboom";
+import { AreaComp, BodyComp, DoubleJumpComp, GameObj, HealthComp, OpacityComp, PosComp, ScaleComp, SpriteComp, TimerComp } from "kaboom";
 
 export type Coord2D = {
     x: number;
@@ -23,6 +23,7 @@ export type Player = GameObj<
         direction: number;
         isInhaling: boolean;
         isFull: boolean
-    }
+    } &
+    TimerComp
 >;
 

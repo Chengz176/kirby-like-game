@@ -26,6 +26,7 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
             isInhaling: false,
             isFull: false
         },
+        k.timer(),
         "player"
     ]);
 
@@ -48,14 +49,14 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
         // Get damage from colliding with the enemy
         player.hurt();
         // Damage animation
-        await k.tween(
+        await player.tween(
             player.opacity,
             0,
             0.05,
             (val) => (player.opacity = val),
             k.easings.linear
         );
-        await k.tween(
+        await player.tween(
             player.opacity,
             1,
             0.05,
@@ -257,7 +258,7 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
             collisionIgnore: ["enemy"],
         }),
         k.body(),
-        k.state("idle", ["idle", "left", "right"]),
+        k.state("left" ,["left", "right"]),
         {
             isInhalable: false,
             speed: 100
@@ -267,13 +268,20 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
 
     makeInhalable(k, guy);
 
-    guy.onStateEnter("idle", async () => {
-        k.wait(1, () => guy.enterState("left"));
-    });
+    // An object for detecting if the guy 
+    // is on the edge of the platform
+    const nextPos = guy.add([
+        k.area({
+            shape: new k.Rect(k.vec2(), 12, 12),
+            collisionIgnore: ["player", "enemy", "nextPos"]
+        }),
+        k.pos(),
+        k.body(),
+        "nextPos"
+    ]);
 
     guy.onStateEnter("left", async () => {
         guy.flipX = false;
-        k.wait(2, () => guy.enterState("right"));
     })
 
     guy.onStateUpdate("left", async () => {
@@ -282,12 +290,25 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
 
     guy.onStateEnter("right", async () => {
         guy.flipX = true;
-        k.wait(2, () => guy.enterState("left"));
     });
 
     guy.onStateUpdate("right", async () => {
         guy.move(guy.speed, 0);
     });
+
+    nextPos.onUpdate(() => {
+        if (nextPos.isFalling()) {
+            // The guy is on the edge of the platform
+            // Turn around
+            if (guy.state === "left") {
+                guy.enterState("right");
+            }
+            else {
+                guy.enterState("left");
+            }
+        }
+        nextPos.pos = k.vec2((guy.state === "left" ? -12 : 14), 4);
+    })
 }
 
 export function makeBirdEnemy(

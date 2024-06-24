@@ -3,6 +3,7 @@ import { defineScenes } from "./scenes";
 import { SceneStates } from "./states";
 
 (async function gameSetup() {
+    k.debug.inspect = true;
     k.loadSprite("assets", "./kirby-like.png", {
         sliceX: 9,
         sliceY: 10,
