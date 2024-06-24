@@ -30,14 +30,8 @@ export async function defineScenes() {
             setControls(k, kirb);
     
             k.add(kirb);
-    
+            
             k.camScale(k.vec2(0.7));
-            k.camPos(0, 800);
-            k.onUpdate(() => {
-                if (k.camPos().x - kirb.pos.x != 200) {
-                    k.camPos(kirb.pos.x + 200, 800);
-                }
-            });
     
             for (const flamePos of spawnPoints.flame) {
                 makeFlameEnemy(k, flamePos);

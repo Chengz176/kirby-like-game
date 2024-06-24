@@ -31,9 +31,7 @@ export const makeMap = async (k: KaboomCtx, name: string) => {
                             ),
                             collisionIgnore: ["platform", "exit"]
                         }),
-                        collider.name === "exit" 
-                            ? null
-                            : k.body({isStatic: true}),
+                        k.body({isStatic: true}),
                         k.pos(collider.x, collider.y),
                         collider.name === "exit"
                             ? "exit"

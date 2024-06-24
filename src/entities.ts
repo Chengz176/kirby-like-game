@@ -97,7 +97,12 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
     })
 
     player.onUpdate(() => {
-        if (player.pos.y < 0 || player.pos.y > 2000) {
+
+        // Camera follows the player
+        k.camPos(k.vec2(player.pos.x + 200, 800));
+
+        if (player.pos.y < 0 || player.pos.y > k.height() * scale) {
+            player.destroy();
             k.go(SceneStates.scenes[SceneStates.currentScene]);
         }
     });
@@ -227,16 +232,15 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
 
     makeInhalable(k, flame);
 
-    flame.onStateEnter("idle", async () => {
-        await k.wait(1);
-        flame.enterState("jump");
+    flame.onStateEnter("idle", () => {
+        k.wait(1, () => flame.enterState("jump"));
     });
 
-    flame.onStateEnter("jump", async () => {
+    flame.onStateEnter("jump", () => {
         flame.jump(1000);
     });
 
-    flame.onStateUpdate("jump", async () => {
+    flame.onStateUpdate("jump", () => {
         if (!flame.isJumping()) {
             flame.enterState("idle");
         }
@@ -264,14 +268,12 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
     makeInhalable(k, guy);
 
     guy.onStateEnter("idle", async () => {
-        await k.wait(1);
-        guy.enterState("left");
+        k.wait(1, () => guy.enterState("left"));
     });
 
     guy.onStateEnter("left", async () => {
         guy.flipX = false;
-        await k.wait(2);
-        guy.enterState("right");
+        k.wait(2, () => guy.enterState("right"));
     })
 
     guy.onStateUpdate("left", async () => {
@@ -280,8 +282,7 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
 
     guy.onStateEnter("right", async () => {
         guy.flipX = true;
-        await k.wait(2);
-        guy.enterState("left");
+        k.wait(2, () => guy.enterState("left"));
     });
 
     guy.onStateUpdate("right", async () => {
