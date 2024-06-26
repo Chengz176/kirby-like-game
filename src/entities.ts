@@ -27,6 +27,7 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
             isFull: false
         },
         k.timer(),
+        k.offscreen({hide: true}),
         "player"
     ]);
 
@@ -228,6 +229,7 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
         {
             isInhalable: false
         },
+        k.offscreen({hide: true}),
         "enemy"
     ]);
 
@@ -263,6 +265,7 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
             isInhalable: false,
             speed: 100
         },
+        k.offscreen({hide: true}),
         "enemy"
     ]);
 
@@ -277,6 +280,7 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
         }),
         k.pos(),
         k.body(),
+        k.offscreen({hide: true}),
         "nextPos"
     ]);
 
@@ -329,7 +333,7 @@ export function makeBirdEnemy(
         }),
         k.move(k.LEFT, speed),
         k.offscreen({
-            destroy: true,
+            hide: true,
             distance: 400
         }),
         "enemy"
