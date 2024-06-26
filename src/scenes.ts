@@ -11,20 +11,14 @@ import { SceneStates } from "./states";
 
 export async function defineScenes() {
     for (const scene of SceneStates.scenes) {
-        k.loadSprite(scene, `${scene}.png`);
-
         const { map, spawnPoints } = await makeMap(k, scene);
 
         k.scene(scene, () => {
             k.setGravity(2100);
-            k.add([
-                k.rect(k.width(), k.height()),
-                k.color(k.Color.fromHex("#f7d7db")),
-                k.fixed()
-            ]);
+            k.setBackground(k.Color.fromHex("#f7d7db"));
             
             k.add(map);
-    
+                
             const kirb = makePlayer(k, spawnPoints.player[0]);
     
             setControls(k, kirb);

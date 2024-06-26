@@ -9,7 +9,6 @@ export const makeMap = async (k: KaboomCtx, name: string) => {
 
     // Create a map component
     const map = k.make([
-        k.sprite(name),
         k.scale(scale),
         k.pos(0)
     ]);
@@ -18,6 +17,25 @@ export const makeMap = async (k: KaboomCtx, name: string) => {
 
     for (const layer of mapData.layers) {
         switch (layer.name) {
+            case "background":
+            case "clouds":
+            case "platforms":
+                // Generate the texture
+                const tiles = layer.data;
+                for (let i = 0; i < tiles.length; i++) {
+                    let row = Math.floor(i / layer.width);
+                    let col = i % layer.width;
+                    if (tiles[i] > 0) {
+                        map.add([
+                            k.sprite("assets", {
+                                frame: tiles[i] - 1
+                            }),
+                            k.pos(16 * col, 16 * row),
+                            k.offscreen({hide: true}),
+                        ])
+                    }
+                }
+                break;
             case "colliders":
                 // Objects in the level
                 for (const collider of layer.objects) {
@@ -35,7 +53,8 @@ export const makeMap = async (k: KaboomCtx, name: string) => {
                         k.pos(collider.x, collider.y),
                         collider.name === "exit"
                             ? "exit"
-                            : "platform"
+                            : "platform",
+                        k.offscreen({hide: true})
                     ])
                 }
                 break;

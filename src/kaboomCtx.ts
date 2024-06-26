@@ -5,6 +5,8 @@ export const k = kaboom({
     width: 256 * scale,
     height: 144 * scale,
     scale,
-    letterbox: true,
+    letterbox: false,
+    stretch: true,
     global: false,
+    canvas: document.getElementById("game") as HTMLCanvasElement,
 });
