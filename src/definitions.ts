@@ -1,5 +1,7 @@
 import { AreaComp, BodyComp, DoubleJumpComp, GameObj, HealthComp, OpacityComp, PosComp, ScaleComp, SpriteComp, TimerComp } from "kaboom";
 
+
+// Game
 export type Coord2D = {
     x: number;
     y: number;
@@ -27,3 +29,13 @@ export type Player = GameObj<
     TimerComp
 >;
 
+// Simple Tiled Model
+export type Tile = {
+    edges: number[];
+    frame: number;
+    rotation: number
+};
+
+export type EdgesCount = {
+    [key: number]: number
+};
