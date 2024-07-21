@@ -306,52 +306,56 @@ export const SimpleTiledModel = () => {
     };
 
     const backTrack = () => {
-        let lastIndicesChanged = history.indicesChanged.pop();
-        
-        if (lastIndicesChanged === undefined) {
-            console.log("Cannot backtrack");
-            return false;
-        }
-        
-        const fixedTileIndex = lastIndicesChanged[0];
+        let stackTop;
 
-        tileMap[fixedTileIndex] = undefined;
-        fixedTilesCount--;
-        while (lastIndicesChanged.length > 0) {
-            const index = lastIndicesChanged.pop();
-            if (index !== undefined) {
-                let currTileIndex = history.possibleTilesChanged[index].pop();
-                const end = getEndOf(history.possibleTilesChanged[index]);
-                if (currTileIndex !== undefined) {
-                    currTileIndex++;
-                    while (currTileIndex <= end) {
-                        const tile = tileset[possibleTiles[index][currTileIndex]];
+        do {
+            let lastIndicesChanged = history.indicesChanged.pop();
+            
+            if (lastIndicesChanged === undefined) {
+                console.log("Cannot backtrack");
+                return false;
+            }
+            
+            const fixedTileIndex = lastIndicesChanged[0];
 
-                        // Backtrack proportionSum and plogpSum
-                        const p = proportion[tile.frame].weight;
-                        proportionSums[index] += p;
-                        plogpSums[index] += p * Math.log(p);
-
-                        // Backtrack edges[N/E/S/W]Counts
-                        updateEdgesCounts(index, possibleTiles[index][currTileIndex], 1);
-
+            tileMap[fixedTileIndex] = undefined;
+            fixedTilesCount--;
+            while (lastIndicesChanged.length > 0) {
+                const index = lastIndicesChanged.pop();
+                if (index !== undefined) {
+                    let currTileIndex = history.possibleTilesChanged[index].pop();
+                    const end = getEndOf(history.possibleTilesChanged[index]);
+                    if (currTileIndex !== undefined) {
                         currTileIndex++;
+                        while (currTileIndex <= end) {
+                            const tile = tileset[possibleTiles[index][currTileIndex]];
+
+                            // Backtrack proportionSum and plogpSum
+                            const p = proportion[tile.frame].weight;
+                            proportionSums[index] += p;
+                            plogpSums[index] += p * Math.log(p);
+
+                            // Backtrack edges[N/E/S/W]Counts
+                            updateEdgesCounts(index, possibleTiles[index][currTileIndex], 1);
+
+                            currTileIndex++;
+                        }
                     }
                 }
             }
-        }
 
-        const fixedTileEnd = getEndOf(history.possibleTilesChanged[fixedTileIndex]);
-        if (fixedTileEnd > 0) {
-            removeTile(fixedTileIndex, 0, fixedTileEnd);
-            history.possibleTilesChanged[fixedTileIndex].push(fixedTileEnd - 1);
-            history.stack.push(fixedTileIndex);
-        }
+            const fixedTileEnd = getEndOf(history.possibleTilesChanged[fixedTileIndex]);
+            if (fixedTileEnd > 0) {
+                removeTile(fixedTileIndex, 0, fixedTileEnd);
+                history.possibleTilesChanged[fixedTileIndex].push(fixedTileEnd - 1);
+                history.stack.push(fixedTileIndex);
+            }
 
-        if (getEndOf(history.stack) === -1) {
-            history.stack.pop();
-            return backTrack();
-        }
+            stackTop = getEndOf(history.stack);
+            if (stackTop === -1) {
+                history.stack.pop();
+            }
+        } while (stackTop === -1);
 
         return history.stack.length > 0;
     };
