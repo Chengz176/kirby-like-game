@@ -1,5 +1,6 @@
 import { EdgesCount, Tile } from "./definitions";
 
+// Reference: https://github.com/mxgmn/WaveFunctionCollapse
 export const SimpleTiledModel = () => {
     // Members
     let isInitialized = false;
@@ -36,7 +37,7 @@ export const SimpleTiledModel = () => {
     let possibleTiles: number[][];
     let possibleTilesSize: number;
 
-    let tileMap: (number | undefined)[];
+    let tileMap: number[];
     let fixedTilesCount: number = 0;
 
     let history: {
@@ -68,7 +69,7 @@ export const SimpleTiledModel = () => {
     const hasInitializedWrapper = <T, U>(f: (...args: T[]) => U) => {
         return (...args: T[]) => {
             if (!isInitialized) {
-                console.log("The model has not initialized.\n" +
+                console.log("SimpleTiledModel: The model has not initialized.\n" +
                              "Uses model.init() to initialize the model.")
                 return;
             }
@@ -157,10 +158,10 @@ export const SimpleTiledModel = () => {
         let indices: number[] = [];
         let minEntropy = Number.MAX_VALUE;
         for (let i = 0; i < possibleTiles.length; i++) {
-            if (tileMap[i] === undefined) {
+            if (tileMap[i] === -1) {
                 const entropy = computeEntropy(i);
                 if (entropy === -1) {
-                    console.log("Entropy Error");
+                    console.log("SimpleTiledModel: Entropy Error");
                     return false;
                 }
                 if (entropy < minEntropy) {
@@ -174,7 +175,7 @@ export const SimpleTiledModel = () => {
         }
 
         if (indices.length === 0) {
-            console.log('No possible fixed tile');
+            console.log('SimpleTiledModel: No possible fixed tile');
             return false;
         }
 
@@ -209,7 +210,7 @@ export const SimpleTiledModel = () => {
             }
         }
 
-        console.log('Error on selectTile():', index);
+        console.log('SimpleTiledModel: Error on selectTile():', index);
 
         return {
             index: -1,
@@ -278,7 +279,7 @@ export const SimpleTiledModel = () => {
         }
 
         if (currTileIndex == -1) {
-            console.log(`Tile ${tile} at index ${index} is not in the tileset ` + 
+            console.log(`SimpleTiledModel: Tile ${tile} at index ${index} is not in the tileset ` + 
                         "or does not fit with other fixed tiles");
             return false;
         }
@@ -312,13 +313,13 @@ export const SimpleTiledModel = () => {
             let lastIndicesChanged = history.indicesChanged.pop();
             
             if (lastIndicesChanged === undefined) {
-                console.log("Cannot backtrack");
+                console.log("SimpleTiledModel: Cannot backtrack");
                 return false;
             }
             
             const fixedTileIndex = lastIndicesChanged[0];
 
-            tileMap[fixedTileIndex] = undefined;
+            tileMap[fixedTileIndex] = -1;
             fixedTilesCount--;
             while (lastIndicesChanged.length > 0) {
                 const index = lastIndicesChanged.pop();
@@ -361,13 +362,12 @@ export const SimpleTiledModel = () => {
     };
     
     return {
-        async init(tilesetPath: string, initWidth=5, initHeight=5) {
+        init(tilesetData: Tile[], initWidth=5, initHeight=5) {
             width = initWidth;
             height = initHeight;
             size = width * height;
 
-            const res = await fetch(tilesetPath);
-            tileset = await res.json();
+            tileset = tilesetData;
             tilesetSize = tileset.length;
             
             for (const tile of tileset) {
@@ -412,7 +412,7 @@ export const SimpleTiledModel = () => {
                 });
             possibleTilesSize = possibleTiles.length;
 
-            tileMap = Array<number>(size);
+            tileMap = Array<number>(size).fill(-1);
 
             history = {
                 stack: Array<number>(),
@@ -432,7 +432,7 @@ export const SimpleTiledModel = () => {
         setProportion: hasInitializedWrapper((newProportion: {[frame: number]: number}) => {
             const count = Object.keys(newProportion).length;
             if (count !== framesCount) {
-                console.log("The size did not match the number of unique frames in the tileset");
+                console.log("SimpleTiledModel: The size did not match the number of unique frames in the tileset");
                 return false;
             }
 
@@ -441,13 +441,13 @@ export const SimpleTiledModel = () => {
             for (const frame of Object.keys(newProportion)) {
                 const frameNum = Number(frame);
                 if (!frames.includes(frameNum)) {
-                    console.log("Invalid frame:", frame);
+                    console.log("SimpleTiledModel: Invalid frame:", frame);
                     return false;
                 }
 
                 value = newProportion[frameNum];
                 if (value < 0) {
-                    console.log("Negative proportion for frame:", frame);
+                    console.log("SimpleTiledModel: Negative proportion for frame:", frame);
                     return false;
                 }
 
@@ -489,8 +489,8 @@ export const SimpleTiledModel = () => {
                 }
                 
                 if (index_tile.index === -1 || fixedTilesCount < 0) {
-                    console.log('Map generation Failed');
-                    return [];
+                    console.log('SimpleTiledModel: Map generation Failed');
+                    return;
                 }  
             }
 
