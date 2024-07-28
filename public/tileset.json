@@ -15,16 +15,6 @@
 		"rotation": 0
 	},
 	{
-		"edges": [1, 0, 0, 0],
-		"frame": 0,
-		"rotation": 0
-	},
-	{
-		"edges": [1, 0, 1, 0],
-		"frame": 40,
-		"rotation": 0
-	},
-	{
 		"edges": [1, 0, 2, 0],
 		"frame": 49,
 		"rotation": 0

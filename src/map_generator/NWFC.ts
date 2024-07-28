@@ -1,4 +1,4 @@
-import { Tile } from "./definitions";
+import { Tile } from "../definitions";
 import { SimpleTiledModel } from "./SimpleTiledModel";
 
 // Reference: https://doi.org/10.48550/arXiv.2308.07307
@@ -8,20 +8,22 @@ export class NWFC {
     #dimension: number;
     #tileset: Tile[];
     #SUBGRID_SIDE = 5;
-    #frameProportions: {[key: number]: number} = {};
+    #frameProportions: { [key: number]: number } = {};
     #frames = new Set<number>();
+    #randNumGen: () => number;
 
-    constructor(tileset: Tile[], width: number, height: number) {
+    constructor(tileset: Tile[], width: number, height: number, randNumGen: () => number) {
         this.#tileset = tileset;
         this.#width = width;
         this.#height = height;
         this.#dimension = width * height;
-        
+        this.#randNumGen = randNumGen;
+
         const model = SimpleTiledModel();
-        model.init(this.#tileset, 1, 1);
+        model.init(this.#tileset, 1, 1, this.#randNumGen);
         const frames = model.getFrames();
         if (frames !== undefined) {
-            frames.forEach(frame => this.#frames.add(frame));
+            frames.forEach((frame) => this.#frames.add(frame));
             const w = 1 / this.#frames.size;
             for (const frame of this.#frames) {
                 this.#frameProportions[frame] = w;
@@ -42,22 +44,22 @@ export class NWFC {
             const n = tile.edges[0].toString();
             const e = tile.edges[1].toString();
             const s = tile.edges[2].toString();
-            const w = tile.edges[3].toString(); 
+            const w = tile.edges[3].toString();
 
             edgesWE.add(w);
             edgesWE.add(e);
             edgesNS.add(n);
             edgesNS.add(s);
 
-            pairWE.add(w + ',' + e);
-            pairNS.add(n + ',' + s);
-            pairNW.add(n + ',' + w);
-            pairSE.add(s + ',' + e);
+            pairWE.add(w + "," + e);
+            pairNS.add(n + "," + s);
+            pairNW.add(n + "," + w);
+            pairSE.add(s + "," + e);
         }
 
         for (const w of edgesWE) {
             for (const e of edgesWE) {
-                if (!pairWE.has(w + ',' + e)) {
+                if (!pairWE.has(w + "," + e)) {
                     return false;
                 }
             }
@@ -65,7 +67,7 @@ export class NWFC {
 
         for (const n of edgesNS) {
             for (const s of edgesNS) {
-                if (!pairNS.has(n + ',' + s)) {
+                if (!pairNS.has(n + "," + s)) {
                     return false;
                 }
             }
@@ -73,7 +75,7 @@ export class NWFC {
 
         for (const n of edgesNS) {
             for (const w of edgesWE) {
-                if (!pairNW.has(n + ',' + w)) {
+                if (!pairNW.has(n + "," + w)) {
                     return false;
                 }
             }
@@ -81,7 +83,7 @@ export class NWFC {
 
         for (const s of edgesNS) {
             for (const e of edgesWE) {
-                if (!pairSE.has(s + ',' + e)) {
+                if (!pairSE.has(s + "," + e)) {
                     return false;
                 }
             }
@@ -90,12 +92,15 @@ export class NWFC {
         return true;
     }
 
-    #simpleTiledModelGenMap(width: number, height: number, 
-                            fixedTiles?: {index: number, tile: number}[]) {
+    #simpleTiledModelGenMap(
+        width: number,
+        height: number,
+        fixedTiles?: { index: number; tile: number }[]
+    ) {
         const model = SimpleTiledModel();
-                
-        model.init(this.#tileset, width, height);
-        
+
+        model.init(this.#tileset, width, height, this.#randNumGen);
+
         if (!model.setProportion(this.#frameProportions)) {
             return;
         }
@@ -119,21 +124,25 @@ export class NWFC {
             return;
         }
 
-        const fixedTiles: {index: number, tile: number}[] = [];
-        const rowEnd = Math.min(this.#dimension,
-                                topLeftIndex + (this.#width * this.#SUBGRID_SIDE));
-        const colEnd = Math.min(this.#width,
-                                (topLeftIndex % this.#width) + this.#SUBGRID_SIDE);
+        const fixedTiles: { index: number; tile: number }[] = [];
+        const rowEnd = Math.min(
+            this.#dimension,
+            topLeftIndex + this.#width * this.#SUBGRID_SIDE
+        );
+        const colEnd = Math.min(
+            this.#width,
+            (topLeftIndex % this.#width) + this.#SUBGRID_SIDE
+        );
 
         const width = colEnd - (topLeftIndex % this.#width);
         const height = Math.ceil((rowEnd - topLeftIndex) / this.#width);
 
         for (let row = 0; row < height; row++) {
-            const tile = map[topLeftIndex + (row * this.#width)];
+            const tile = map[topLeftIndex + row * this.#width];
             if (tile > -1) {
                 fixedTiles.push({
                     index: row * width,
-                    tile
+                    tile,
                 });
             }
         }
@@ -143,7 +152,7 @@ export class NWFC {
             if (tile > -1) {
                 fixedTiles.push({
                     index: col,
-                    tile
+                    tile,
                 });
             }
         }
@@ -151,25 +160,33 @@ export class NWFC {
         const subgrid = this.#simpleTiledModelGenMap(width, height, fixedTiles);
         if (subgrid !== undefined) {
             for (let i = 0; i < width * height; i++) {
-                const index = topLeftIndex +
-                                (Math.floor(i / width) * this.#width) +
-                                (i % width);
+                const index =
+                    topLeftIndex +
+                    Math.floor(i / width) * this.#width +
+                    (i % width);
                 map[index] = subgrid[i];
             }
             return true;
         }
 
-        console.log("NWFC: failed to generate subgrid with topLeftIndex: ", topLeftIndex);
+        console.log(
+            "NWFC: failed to generate subgrid with topLeftIndex: ",
+            topLeftIndex
+        );
         return false;
     }
 
     validateMap(map: number[]) {
-        const fixedTiles: {index: number, tile: number}[] = [];
+        const fixedTiles: { index: number; tile: number }[] = [];
         map.map((tile, index) => {
-            fixedTiles.push({index, tile});
-        })
+            fixedTiles.push({ index, tile });
+        });
 
-        const test = this.#simpleTiledModelGenMap(this.#width, this.#height, fixedTiles);
+        const test = this.#simpleTiledModelGenMap(
+            this.#width,
+            this.#height,
+            fixedTiles
+        );
         if (test !== undefined) {
             return true;
         }
@@ -187,7 +204,7 @@ export class NWFC {
         this.#dimension = this.#width * this.#height;
     }
 
-    set frameProportions(newProportions: {[key: number]: number}) {
+    set frameProportions(newProportions: { [key: number]: number }) {
         let total = 0;
         for (const frame of Object.keys(newProportions)) {
             const frameNum = Number(frame);
@@ -204,27 +221,26 @@ export class NWFC {
             total += newProportions[frameNum];
 
             if (total > 1) {
-                console.log('Proportion sum greater than 1');
+                console.log("Proportion sum greater than 1");
                 return;
             }
         }
 
         this.#frameProportions = Object.assign({}, newProportions);
 
-        const diffSize = this.#frames.size - Object.keys(this.#frameProportions).length;
+        const diffSize =
+            this.#frames.size - Object.keys(this.#frameProportions).length;
         if (diffSize > 0) {
             const w = (1 - total) / diffSize;
             for (const frame of this.#frames) {
                 if (!this.#frameProportions.hasOwnProperty(frame)) {
                     this.#frameProportions[frame] = w;
                 }
-            }   
+            }
         }
-
-        console.log(this.#frameProportions);
     }
 
-    generateMap(allowFallback=true) {
+    generateMap(allowFallback = true) {
         if (!this.#isSubComplete()) {
             console.log("NWFC: The tileset is not sub-complete.\n");
 
@@ -238,9 +254,13 @@ export class NWFC {
         }
 
         const map = Array<number>(this.#dimension).fill(-1);
-        for (let i = 0; i < this.#dimension; i += this.#width * (this.#SUBGRID_SIDE - 1)) {
+        for (
+            let i = 0;
+            i < this.#dimension;
+            i += this.#width * (this.#SUBGRID_SIDE - 1)
+        ) {
             for (let j = 0; j < this.#width; j += this.#SUBGRID_SIDE - 1) {
-                if(!this.#genSubgrid(map, i + j)) {
+                if (!this.#genSubgrid(map, i + j)) {
                     return;
                 }
             }
