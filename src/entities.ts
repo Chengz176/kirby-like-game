@@ -1,33 +1,40 @@
 import { GameObj, KaboomCtx } from "kaboom";
-import { Coord2D, Player } from "./libs/definitions";
-import { scale } from "./constants";
+import { Coord2D, Player } from "./definitions";
+import { FRAME_SIDE, SCALE } from "./constants";
 import { SceneStates } from "./states";
-
 
 const LEFT = -1;
 const RIGHT = 1;
 
-export function makePlayer(k: KaboomCtx, pos: Coord2D) {
+export function makePlayer(
+    k: KaboomCtx,
+    pos: Coord2D,
+    mapWidth: number,
+    mapHeight: number
+) {
     //Create player entity
     const player = k.make([
         k.sprite("assets", { anim: "kirbIdle" }),
         k.area({
-            shape: new k.Rect(k.vec2(4, 5.9), 8, 10)
+            shape: new k.Rect(k.vec2(4, 5.9), 8, 10),
         }),
         k.body(),
-        k.pos(pos.x * scale, pos.y * scale),
-        k.scale(scale),
-        k.doubleJump(10),
+        k.pos(
+            (pos.x - FRAME_SIDE / 2) * SCALE,
+            (pos.y - FRAME_SIDE / 2) * SCALE
+        ),
+        k.scale(SCALE),
+        k.doubleJump(Infinity),
         k.health(3),
         k.opacity(1),
         {
             speed: 300,
             direction: LEFT,
             isInhaling: false,
-            isFull: false
+            isFull: false,
         },
         k.timer(),
-        "player"
+        "player",
     ]);
 
     player.onCollide("enemy", async (enemy: GameObj) => {
@@ -67,49 +74,54 @@ export function makePlayer(k: KaboomCtx, pos: Coord2D) {
 
     //Reached the exit door
     player.onCollide("exit", () => {
-        SceneStates.currentScene = (SceneStates.currentScene + 1) % SceneStates.scenes.length;
+        SceneStates.currentScene =
+            (SceneStates.currentScene + 1) % SceneStates.scenes.length;
         k.go(SceneStates.scenes[SceneStates.currentScene]);
     });
 
     // Effect and hitbox for inhaling
     const inhaleEffect = k.add([
-        k.sprite("assets", {anim: "kirbInhaleEffect"}),
+        k.sprite("assets", { anim: "kirbInhaleEffect" }),
         k.pos(),
-        k.scale(scale),
+        k.scale(SCALE),
         k.opacity(0),
-        "inhaleEffect"
+        "inhaleEffect",
     ]);
 
     const inhaleZone = player.add([
         k.area({
-            shape: new k.Rect(k.vec2(0), 20, 4)
+            shape: new k.Rect(k.vec2(0), 20, 4),
         }),
         k.pos(),
-        "inhaleZone"
+        "inhaleZone",
     ]);
 
     inhaleZone.onUpdate(() => {
         inhaleZone.pos = k.vec2(14 * player.direction, 8);
         inhaleEffect.pos = k.vec2(
-            player.pos.x + (60 * player.direction),
+            player.pos.x + 60 * player.direction,
             player.pos.y
         );
         inhaleEffect.flipX = player.direction === LEFT;
-    })
+    });
 
     player.onUpdate(() => {
-
         // Camera follows the player
-        k.camPos(k.vec2(player.pos.x + 200, 800));
+        k.camPos(
+            k.vec2(
+                Math.min(mapWidth - 500, Math.max(440, player.pos.x)),
+                Math.min(mapHeight - 300, Math.max(230, player.pos.y))
+            )
+        );
 
-        if (player.pos.y < 0 || player.pos.y > k.height() * scale) {
+        if (player.pos.y > mapHeight) {
             player.destroy();
             k.go(SceneStates.scenes[SceneStates.currentScene]);
         }
     });
 
     return player;
-};
+}
 
 export function setControls(k: KaboomCtx, player: Player) {
     const inhaleEffectRef = k.get("inhaleEffect")[0];
@@ -137,7 +149,8 @@ export function setControls(k: KaboomCtx, player: Player) {
                 player.play("kirbInhaling");
                 inhaleEffectRef.opacity = 1;
                 break;
-            default: break;
+            default:
+                break;
         }
     });
 
@@ -146,7 +159,8 @@ export function setControls(k: KaboomCtx, player: Player) {
             case "space":
                 player.doubleJump();
                 break;
-            default: break;
+            default:
+                break;
         }
     });
 
@@ -161,23 +175,23 @@ export function setControls(k: KaboomCtx, player: Player) {
                             flipX: player.direction === RIGHT,
                         }),
                         k.area({
-                            shape: new k.Rect(k.vec2(5, 4), 6, 6)
+                            shape: new k.Rect(k.vec2(5, 4), 6, 6),
                         }),
                         k.pos(
-                            player.pos.x + (player.direction * 80),
+                            player.pos.x + player.direction * 80,
                             player.pos.y + 5
                         ),
-                        k.scale(scale),
+                        k.scale(SCALE),
                         player.direction === LEFT
                             ? k.move(k.LEFT, 800)
                             : k.move(k.RIGHT, 800),
-                        "shootingStar"
+                        "shootingStar",
                     ]);
 
-                    shootingStar.onCollide(
-                        "platform", 
-                        () => k.destroy(shootingStar));
-                    
+                    shootingStar.onCollide("platform", () =>
+                        k.destroy(shootingStar)
+                    );
+
                     player.isFull = false;
                     k.wait(1, () => player.play("kirbIdle"));
                     break;
@@ -187,14 +201,15 @@ export function setControls(k: KaboomCtx, player: Player) {
                 player.isInhaling = false;
                 player.play("kirbIdle");
                 break;
-            default: break;
+            default:
+                break;
         }
-    })
-};
+    });
+}
 
 function makeInhalable(k: KaboomCtx, enemy: GameObj) {
     enemy.onCollide("inhaleZone", () => {
-        enemy.isInhalable = true;   
+        enemy.isInhalable = true;
     });
 
     enemy.onCollideEnd("inhaleZone", () => {
@@ -211,14 +226,17 @@ function makeInhalable(k: KaboomCtx, enemy: GameObj) {
         if (playerRef.isInhaling && enemy.isInhalable) {
             enemy.move(playerRef.direction * -800, 0);
         }
-    })
+    });
 }
 
 export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
     const flame = k.add([
-        k.sprite("assets", {anim: "flame"}),
-        k.scale(scale),
-        k.pos(pos.x * scale, pos.y * scale),
+        k.sprite("assets", { anim: "flame" }),
+        k.scale(SCALE),
+        k.pos(
+            (pos.x - FRAME_SIDE / 2) * SCALE,
+            (pos.y - FRAME_SIDE / 2) * SCALE
+        ),
         k.area({
             shape: new k.Rect(k.vec2(4, 6), 8, 10),
             collisionIgnore: ["enemy"],
@@ -226,9 +244,10 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
         k.body(),
         k.state("idle", ["idle", "jump"]),
         {
-            isInhalable: false
+            isInhalable: false,
         },
-        "enemy"
+        k.offscreen({ hide: true }),
+        "enemy",
     ]);
 
     makeInhalable(k, flame);
@@ -246,93 +265,124 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
             flame.enterState("idle");
         }
     });
-};
+}
 
 export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
     const guy = k.add([
-        k.sprite("assets", {anim: "guyWalk"}),
-        k.scale(scale),
-        k.pos(pos.x * scale, pos.y * scale),
+        k.sprite("assets", { anim: "guyWalk" }),
+        k.scale(SCALE),
+        k.pos(
+            (pos.x - FRAME_SIDE / 2) * SCALE,
+            (pos.y - FRAME_SIDE / 2) * SCALE
+        ),
         k.area({
-            shape: new k.Rect(k.vec2(2, 3.9), 12, 12),
+            shape: new k.Rect(k.vec2(2, 3), 12, 13),
             collisionIgnore: ["enemy"],
         }),
         k.body(),
-        k.state("left" ,["left", "right"]),
+        k.state("idle", ["idle", "left", "right"]),
         {
             isInhalable: false,
-            speed: 100
+            speed: 100,
         },
-        "enemy"
+        k.offscreen({ hide: true }),
+        "enemy",
     ]);
 
     makeInhalable(k, guy);
 
-    // An object for detecting if the guy 
-    // is on the edge of the platform
-    const nextPos = guy.add([
+    const detectEdge = guy.add([
         k.area({
-            shape: new k.Rect(k.vec2(), 12, 12),
-            collisionIgnore: ["player", "enemy", "nextPos"]
+            shape: new k.Rect(k.vec2(), 1, 1),
         }),
         k.pos(),
-        k.body(),
-        "nextPos"
+        k.offscreen({ hide: true }),
+        "nextPos",
     ]);
 
-    guy.onStateEnter("left", async () => {
-        guy.flipX = false;
-    })
+    const detectWall = guy.add([
+        k.area({
+            shape: new k.Rect(k.vec2(), 1, 1),
+        }),
+        k.pos(),
+        k.offscreen({ hide: true }),
+        "detectWall",
+    ]);
 
-    guy.onStateUpdate("left", async () => {
+    let nextState = "left";
+
+    guy.onStateEnter("idle", () => {
+        k.wait(1, () => {
+            guy.enterState(nextState);
+        });
+    });
+
+    guy.onStateUpdate("idle", () => {
+        guy.move(0, 0);
+    });
+
+    guy.onStateEnter("left", () => {
+        guy.flipX = false;
+        detectWall.pos = k.vec2(1, 9);
+        detectEdge.pos = k.vec2(1, 15);
+    });
+
+    guy.onStateUpdate("left", () => {
         guy.move(-guy.speed, 0);
     });
 
-    guy.onStateEnter("right", async () => {
-        guy.flipX = true;
+    guy.onStateEnd("left", () => {
+        nextState = "right";
     });
 
-    guy.onStateUpdate("right", async () => {
+    guy.onStateEnter("right", () => {
+        guy.flipX = true;
+        detectWall.pos = k.vec2(14, 9);
+        detectEdge.pos = k.vec2(14, 15);
+    });
+
+    guy.onStateUpdate("right", () => {
         guy.move(guy.speed, 0);
     });
 
-    nextPos.onUpdate(() => {
-        if (nextPos.isFalling()) {
-            // The guy is on the edge of the platform
-            // Turn around
-            if (guy.state === "left") {
-                guy.enterState("right");
-            }
-            else {
-                guy.enterState("left");
-            }
+    guy.onStateEnd("right", () => {
+        nextState = "left";
+    });
+
+    detectWall.onCollide("platform", () => {
+        if (guy.state !== "idle") {
+            guy.enterState("idle");
         }
-        nextPos.pos = k.vec2((guy.state === "left" ? -12 : 14), 4);
-    })
+    });
+
+    detectEdge.onCollideEnd("platform", () => {
+        if (guy.state !== "idle") {
+            guy.enterState("idle");
+        }
+    });
 }
 
-export function makeBirdEnemy(
-    k: KaboomCtx, 
-    pos: Coord2D,
-    speed: number
-) {
+export function makeBirdEnemy(k: KaboomCtx, pos: Coord2D, speed: number) {
     const bird = k.add([
-        k.sprite("assets", {anim: "bird"}),
-        k.scale(scale),
-        k.pos(pos.x * scale, pos.y * scale),
+        k.sprite("assets", { anim: "bird" }),
+        k.scale(SCALE),
+        k.pos(
+            (pos.x - FRAME_SIDE / 2) * SCALE,
+            (pos.y - FRAME_SIDE / 2) * SCALE
+        ),
         k.area({
             shape: new k.Rect(k.vec2(4, 6), 8, 10),
-            collisionIgnore: ["enemy"]
+            collisionIgnore: ["enemy"],
         }),
         k.body({
-            isStatic: true
+            isStatic: true,
         }),
         k.move(k.LEFT, speed),
         k.offscreen({
-            destroy: true,
-            distance: 400
+            hide: true,
+            distance: 400,
         }),
-        "enemy"
+        "enemy",
     ]);
 
     makeInhalable(k, bird);
