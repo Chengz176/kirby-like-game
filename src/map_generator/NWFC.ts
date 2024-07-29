@@ -10,17 +10,17 @@ export class NWFC {
     #SUBGRID_SIDE = 5;
     #frameProportions: { [key: number]: number } = {};
     #frames = new Set<number>();
-    #randNumGen: () => number;
+    #randNum: () => number;
 
-    constructor(tileset: Tile[], width: number, height: number, randNumGen: () => number) {
+    constructor(tileset: Tile[], width: number, height: number, randNum: () => number) {
         this.#tileset = tileset;
         this.#width = width;
         this.#height = height;
         this.#dimension = width * height;
-        this.#randNumGen = randNumGen;
+        this.#randNum = randNum;
 
         const model = SimpleTiledModel();
-        model.init(this.#tileset, 1, 1, this.#randNumGen);
+        model.init(this.#tileset, 1, 1, this.#randNum);
         const frames = model.getFrames();
         if (frames !== undefined) {
             frames.forEach((frame) => this.#frames.add(frame));
@@ -99,7 +99,7 @@ export class NWFC {
     ) {
         const model = SimpleTiledModel();
 
-        model.init(this.#tileset, width, height, this.#randNumGen);
+        model.init(this.#tileset, width, height, this.#randNum);
 
         if (!model.setProportion(this.#frameProportions)) {
             return;

@@ -47,7 +47,7 @@ export async function defineScenes(seed?: number) {
                     makeBirdEnemy(
                         k,
                         birdPos,
-                        100 + Math.floor(300 * randNumGen())
+                        100 + Math.floor(300 * randNumGen.randNum())
                     );
                 });
             }

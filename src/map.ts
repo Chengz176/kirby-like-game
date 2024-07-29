@@ -14,8 +14,8 @@ import { initRandNumGen } from "./helpers";
 export const makeMap = async (k: KaboomCtx, seed?: number) => {
     const randNumGen = initRandNumGen(seed);
 
-    let width: number = 30 + Math.floor(randNumGen() * 21);
-    let height: number = 20 + Math.floor(randNumGen() * 11);
+    let width: number = 50 + Math.floor(randNumGen.randNum() * 21);
+    let height: number = 40 + Math.floor(randNumGen.randNum() * 11);
 
     // Create a map component
     const map = k.make([
@@ -27,6 +27,7 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
         },
     ]);
 
+    // Add map boundaries
     for (let i = 0; i < width; i++) {
         map.add([
             k.sprite("assets", {
@@ -71,29 +72,50 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
             k.offscreen({ hide: true }),
         ]);
     }
-    const backgroundLayer = makeBackgroundLayer.bind(null, k, width, height);
-
-    map.add(await backgroundLayer(randNumGen, "cloud-tileset.json"));
-    map.add(await backgroundLayer(randNumGen, "pillar-tileset.json"));
 
     let spawnPoints: SpawnPoints = {};
 
-    const data = await fetch("tileset.json");
+    const backgroundLayer = makeBackgroundLayer.bind(null, k, width, height);
+
+    const makeLayers = [
+        backgroundLayer("cloud-tileset.json", randNumGen.seed()),
+        backgroundLayer("pillar-tileset.json", randNumGen.seed()),
+        makeLevelLayer(k, width, height, "tileset.json", spawnPoints, randNumGen.seed()),
+    ];
+
+    await Promise.all(makeLayers).then((layers) => {
+        layers.forEach((layer) => map.add(layer));
+    });
+
+    return { map, spawnPoints };
+};
+
+async function makeLevelLayer(
+    k: KaboomCtx,
+    width: number,
+    height: number,
+    tilesetPath: string,
+    spawnPoints: SpawnPoints,
+    seed?: number
+) {
+    const randNum = initRandNumGen(seed).randNum;
+
+    const map = k.make([k.pos(0)]);
+
+    const data = await fetch(tilesetPath);
     const tileset: Tile[] = await data.json();
 
-    const nwfc = new NWFC(tileset, width, height, randNumGen);
-    const airProp = randNumGen() * 0.3 + 0.4;
+    const nwfc = new NWFC(tileset, width, height, randNum);
+    const airProp = randNum() * 0.3 + 0.4;
 
     nwfc.frameProportions = { 0: airProp, 60: (7 * (1 - airProp)) / 12 };
     const tilemap = nwfc.generateMap();
     if (tilemap !== undefined) {
-        spawnPoints = getSpawnPoints(
-            tileset,
-            tilemap,
-            width,
-            height,
-            randNumGen
+        Object.assign(
+            spawnPoints,
+            getSpawnPoints(tileset, tilemap, width, height, randNum)
         );
+
         const playerSpawnPoint = spawnPoints.player[0];
         const playerIndex =
             (playerSpawnPoint.y * width + playerSpawnPoint.x) / FRAME_SIDE;
@@ -110,8 +132,8 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
         ]);
 
         const doorTopLeft: Coord2D = {
-            x: Math.floor(randNumGen() * (width - 4)),
-            y: Math.floor(randNumGen() * (height - 2)),
+            x: Math.floor(randNum() * (width - 4)),
+            y: Math.floor(randNum() * (height - 2)),
         };
 
         const doorIndex = doorTopLeft.x + 2 + (doorTopLeft.y + 1) * width;
@@ -243,22 +265,24 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
         }
     }
 
-    return { map, spawnPoints };
-};
+    return map;
+}
 
 async function makeBackgroundLayer(
     k: KaboomCtx,
     width: number,
     height: number,
-    randNumGen: () => number,
-    tilesetPath: string
+    tilesetPath: string,
+    seed?: number
 ) {
+    const randNum = initRandNumGen(seed).randNum;
+
     const res = await fetch(tilesetPath);
     const tileset = await res.json();
 
-    const map = k.make([k.pos(0)]);
+    const map = k.make([k.pos(0), k.z(-1)]);
 
-    const nwfc = new NWFC(tileset, width, height, randNumGen);
+    const nwfc = new NWFC(tileset, width, height, randNum);
     nwfc.frameProportions = { 0: 0.95 };
     const tilemap = nwfc.generateMap();
     if (tilemap !== undefined) {
