@@ -5,7 +5,7 @@ export const SimpleTiledModel = () => {
     // Members
     let isInitialized = false;
 
-    let randNumGen: () => number;
+    let randNum: () => number;
 
     let width: number;
     let height: number;
@@ -209,7 +209,7 @@ export const SimpleTiledModel = () => {
             swap(
                 indices,
                 i,
-                i + Math.floor(randNumGen() * (indices.length - i))
+                i + Math.floor(randNum() * (indices.length - i))
             );
             history.stack.push(indices[i]);
         }
@@ -221,7 +221,7 @@ export const SimpleTiledModel = () => {
         const index = history.stack.pop();
 
         if (index !== undefined) {
-            const comp = randNumGen() * proportionSums[index];
+            const comp = randNum() * proportionSums[index];
 
             let temp = 0;
             for (
@@ -441,12 +441,12 @@ export const SimpleTiledModel = () => {
     };
 
     return {
-        init(tilesetData: Tile[], initWidth = 5, initHeight = 5, initRandNumGen: () => number) {
+        init(tilesetData: Tile[], initWidth = 5, initHeight = 5, initRandNum: () => number) {
             width = initWidth;
             height = initHeight;
             size = width * height;
 
-            randNumGen = initRandNumGen;
+            randNum = initRandNum;
 
             tileset = tilesetData;
             tilesetSize = tileset.length;
