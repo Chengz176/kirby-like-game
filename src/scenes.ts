@@ -1,14 +1,14 @@
 import { k } from "./kaboomCtx";
-import { makeMap } from "./map";
+import { makeMap } from "./map_generator/map";
 import {
-    makePlayer,
     makeBirdEnemy,
     makeFlameEnemy,
     makeGuyEnemy,
-    setControls,
-} from "./entities";
+} from "./entities/enemies";
 import { SceneStates } from "./states";
 import { initRandNumGen } from "./helpers";
+import { PlayerEntity, setControls } from "./entities/player";
+import { BACKGROUND_COLOR } from "./constants";
 
 export async function defineScenes(seed?: number) {
     for (const scene of SceneStates.scenes) {
@@ -16,11 +16,11 @@ export async function defineScenes(seed?: number) {
 
         k.scene(scene, () => {
             k.setGravity(2100);
-            k.setBackground(k.Color.fromHex("#f7d7db"));
+            k.setBackground(k.Color.fromHex(BACKGROUND_COLOR));
 
             k.add(map);
 
-            const kirb = makePlayer(
+            const kirb = new PlayerEntity(
                 k,
                 spawnPoints.player[0],
                 map.width,
@@ -29,7 +29,7 @@ export async function defineScenes(seed?: number) {
 
             setControls(k, kirb);
 
-            k.add(kirb);
+            k.add(kirb.player);
 
             k.camScale(k.vec2(1.1));
 
@@ -43,13 +43,7 @@ export async function defineScenes(seed?: number) {
 
             const randNumGen = initRandNumGen(seed);
             for (const birdPos of spawnPoints.bird) {
-                k.loop(10, () => {
-                    makeBirdEnemy(
-                        k,
-                        birdPos,
-                        100 + Math.floor(300 * randNumGen.randNum())
-                    );
-                });
+                makeBirdEnemy(k, birdPos, randNumGen);
             }
         });
     }
