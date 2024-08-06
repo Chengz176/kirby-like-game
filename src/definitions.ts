@@ -1,4 +1,5 @@
 import {
+    AnchorComp,
     AreaComp,
     BodyComp,
     DoubleJumpComp,
@@ -21,28 +22,39 @@ export type SpawnPoints = {
     [key: string]: Coord2D[];
 };
 
-export type Player = GameObj<
+// Entities
+export type Entity = GameObj<
     SpriteComp &
         AreaComp &
         BodyComp &
         PosComp &
         ScaleComp &
-        DoubleJumpComp &
         HealthComp &
-        OpacityComp & {
-            speed: number;
-            direction: number;
-            isInhaling: boolean;
-            isFull: boolean;
-        } & TimerComp
+        OpacityComp &
+        TimerComp
 >;
 
+export type Player = Entity &
+    GameObj<
+        DoubleJumpComp &
+            HealthComp &
+            AnchorComp &
+            OpacityComp & {
+                speed: number;
+                direction: number;
+                isInhaling: boolean;
+                enemyInhaled: number;
+                canInhale: boolean;
+            } & TimerComp
+    >;
+
+// Map generation
 export type RectCollider = {
     x: number;
     y: number;
     width: number;
     height: number;
-}
+};
 
 // Simple Tiled Model
 export type Tile = {
