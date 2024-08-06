@@ -34,11 +34,11 @@ export async function defineScenes(seed?: number) {
             k.camScale(k.vec2(1.1));
 
             for (const flamePos of spawnPoints.flame) {
-                makeFlameEnemy(k, flamePos);
+                makeFlameEnemy(k, flamePos, map.height);
             }
 
             for (const guyPos of spawnPoints.guy) {
-                makeGuyEnemy(k, guyPos);
+                makeGuyEnemy(k, guyPos, map.height);
             }
 
             const randNumGen = initRandNumGen(seed);

@@ -49,7 +49,7 @@ function makeInhalable(k: KaboomCtx, enemy: Entity) {
     });
 }
 
-export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
+export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
     const flame = k.add([
         k.sprite("assets", { anim: "flame" }),
         k.scale(SCALE),
@@ -109,9 +109,15 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D) {
             flame.enterState("idle");
         }
     });
+
+    flame.onUpdate(() => {
+        if (flame.pos.y > mapHeight) {
+            flame.destroy();
+        }
+    })
 }
 
-export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
+export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
     const guy = k.add([
         k.sprite("assets", { anim: "guyWalk" }),
         k.scale(SCALE),
@@ -196,6 +202,12 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D) {
     guy.onStateEnd("right", () => {
         nextState = "left";
     });
+
+    guy.onUpdate(() => {
+        if (guy.pos.y > mapHeight) {
+            guy.destroy();
+        }
+    })
 
     detectWall.onCollide("platform", () => {
         if (guy.state !== "idle") {
