@@ -6,16 +6,16 @@ import {
     GRASS_FRAME,
     SCALE,
     SIGN_FRAME,
-} from "./constants";
-import { Coord2D, RectCollider, SpawnPoints, Tile } from "./definitions";
-import { NWFC } from "./map_generator/NWFC";
-import { initRandNumGen } from "./helpers";
+} from "../constants";
+import { Coord2D, RectCollider, SpawnPoints, Tile } from "../definitions";
+import { NWFC } from "./NWFC";
+import { initRandNumGen } from "../helpers";
 
 export const makeMap = async (k: KaboomCtx, seed?: number) => {
     const randNumGen = initRandNumGen(seed);
 
-    let width: number = 50 + Math.floor(randNumGen.randNum() * 21);
-    let height: number = 40 + Math.floor(randNumGen.randNum() * 11);
+    const width: number = 50 + Math.floor(randNumGen.randNum() * 11);
+    const height: number = 30 + Math.floor(randNumGen.randNum() * 11);
 
     // Create a map component
     const map = k.make([
@@ -25,6 +25,7 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
             width: width * FRAME_SIDE * SCALE,
             height: height * FRAME_SIDE * SCALE,
         },
+        k.z(-2),
     ]);
 
     // Add map boundaries
@@ -80,7 +81,14 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
     const makeLayers = [
         backgroundLayer("cloud-tileset.json", randNumGen.seed()),
         backgroundLayer("pillar-tileset.json", randNumGen.seed()),
-        makeLevelLayer(k, width, height, "tileset.json", spawnPoints, randNumGen.seed()),
+        makeLevelLayer(
+            k,
+            width,
+            height,
+            "tileset.json",
+            spawnPoints,
+            randNumGen.seed()
+        ),
     ];
 
     await Promise.all(makeLayers).then((layers) => {
@@ -200,16 +208,7 @@ async function makeLevelLayer(
             }
         }
 
-        while (
-            !pathToDoor(
-                playerIndex,
-                doorIndex,
-                width,
-                isAirTile,
-                tilemap,
-                tileset
-            )
-        );
+        while (!pathToDoor(playerIndex, doorIndex, width, isAirTile));
 
         for (let i = 0; i < tilemap.length; i++) {
             if (
@@ -450,13 +449,17 @@ function getSpawnPoints(
 
     spawnPoints.player = [playerSpawnPoint];
 
-    const guyPosEnd = Math.floor(grassPos.length / 5);
-    const flamePosEnd = Math.floor((2 * grassPos.length) / 5);
-    spawnPoints.guy = grassPos.slice(0, guyPosEnd);
-    spawnPoints.flame = grassPos.slice(guyPosEnd, flamePosEnd);
+    const maxEnemy = Math.floor(tilemap.length / 300);
+    const guyPosEnd = Math.floor(grassPos.length / 10);
+    const flamePosEnd = Math.floor((2 * grassPos.length) / 10);
+    spawnPoints.guy = grassPos.slice(0, Math.min(maxEnemy, guyPosEnd));
+    spawnPoints.flame = grassPos.slice(
+        guyPosEnd,
+        Math.min(guyPosEnd + maxEnemy, flamePosEnd)
+    );
     spawnPoints.bird = grassPos.slice(
         flamePosEnd,
-        Math.floor((3 * grassPos.length) / 5)
+        Math.min(flamePosEnd + maxEnemy, Math.floor((3 * grassPos.length) / 10))
     );
 
     return spawnPoints;
@@ -466,9 +469,7 @@ function pathToDoor(
     startIndex: number,
     endIndex: number,
     width: number,
-    isAirTile: boolean[],
-    tilemap: number[],
-    tileset: Tile[]
+    isAirTile: boolean[]
 ) {
     const visited = Array<boolean>(isAirTile.length).fill(false);
 
@@ -505,14 +506,6 @@ function pathToDoor(
                             visited[adjacent] = true;
                             queue.push(adjacent);
                         } else {
-                            const topIndex = Math.max(-1, adjacent - width);
-                            if (
-                                topIndex > -1 &&
-                                tileset[tilemap[topIndex]].frame === GRASS_FRAME
-                            ) {
-                                tilemap[topIndex] = 0;
-                            }
-
                             const adjacentCoord: Coord2D = {
                                 x: adjacent % width,
                                 y: Math.floor(adjacent / width),
