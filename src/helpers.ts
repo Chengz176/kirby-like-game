@@ -1,28 +1,35 @@
 import { TND_CONSTANTS } from "./constants";
-import { k } from "./kaboomCtx";
 
 export const initRandNumGen = (initSeed?: number) => {
+    const M = 2 ** 31 - 1;
+    const A = 48271;
+
     let seed =
         initSeed !== undefined
             ? initSeed
-            : Date.now() + Math.floor(Math.random() * 1e6);
+            : 1 + (Date.now() + Math.floor(Math.random() * 1e6)) % (M - 1) ;
 
     return {
+        // Reference: https://en.wikipedia.org/wiki/Lehmer_random_number_generator
         randNum() {
-            k.randSeed(seed);
-            const rand = k.rand();
-            seed = k.randSeed();
+            const rand = seed / M;
+            seed = (A * seed) % M;
             return rand;
         },
 
         seed(newSeed?: number) {
-            if (newSeed !== undefined) {
-                return k.randSeed(newSeed);
+            if (newSeed !== undefined && newSeed > 0 && newSeed < M) {
+                seed = newSeed;
             }
 
             return seed;
         },
 
+        upperBound() {
+            return M;
+        },
+
+        // Reference: https://arxiv.org/pdf/1201.6140
         rand_TND() {
             const phi = (x: number) => {
                 return Math.exp((-1 * x ** 2) / 2) / Math.sqrt(2 * Math.PI);

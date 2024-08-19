@@ -1,0 +1,197 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: none;
+    outline: none;
+    color: white;
+    touch-action: none;
+    text-shadow: 1px 1px black;
+}
+
+body {
+    background-color: black;
+}
+
+.container {
+    position: absolute;
+    aspect-ratio: 256 / 144;
+    overflow-y: hidden;
+    width: 100%;
+    height: auto;
+}
+
+.control-button {
+    opacity: 0.5;
+}
+
+.control-button:active {
+    opacity: 1;
+}
+
+.bar {
+    width: auto;
+    height: 50%;
+    aspect-ratio: 1 / 1;
+    background: transparent;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.heart {
+    position: relative;
+    width: auto;
+    height: 50%;
+    aspect-ratio: 1 / 1;
+    rotate: 45deg;
+    background-color: red;
+    border: 1px solid darkred;
+}
+
+.heart::before,
+.heart::after {
+    display: block;
+    position: absolute;
+    content: "";
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: red;
+    border-top: 1px solid darkred;
+    border-left: 1px solid darkred;
+}
+
+.heart::before {
+    top: -50%;
+}
+.heart::after {
+    left: -50%;
+}
+
+.sprite-img {
+    background-image: url("./assets/kirby-like.png");
+    position: absolute;
+    background-repeat: no-repeat;
+    width: 16px;
+    left: 0;
+    aspect-ratio: 1 / 1;
+    transform: scale(2);
+    transform-origin: bottom;
+}
+.kirb-img {
+    animation-name: bounce;
+    animation-duration: 500ms;
+    animation-iteration-count: infinite;
+}
+
+.flame-img {
+    background-position-y: 45%;
+}
+
+.bird-img {
+    background-position-y: 35%;
+}
+
+.guy-img {
+    background-position-y: 23%;
+}
+
+@keyframes bounce {
+    0% {
+        top: 16px;
+    }
+    50% {
+        top: 8px;
+    }
+    100% {
+        top: 16px;
+    }
+}
+
+.btn {
+    background-color: transparent;
+    transition-property: background-color;
+    transition-duration: 100ms;
+    text-align: center;
+    height: 100%;
+    border-radius: 10px;
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 48px;
+    position: relative;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: pink;
+}
+
+.input-list-container {
+    width: 40%;
+    left: 30%;
+    bottom: 20%;
+    position: absolute;
+}
+
+.mini-map-container {
+    width: 30%;
+    height: 30%; 
+    position: absolute; 
+    opacity: 0.7;
+    right: 1%;
+    top: 1%;
+    border: 1px solid white
+}
+
+@media (min-aspect-ratio: 256 / 144) {
+    .container {
+        height: 100%;
+        width: auto;
+    }
+}
+
+@media (max-aspect-ratio: 1 / 1) {
+    .input-list-container {
+        width: 80%;
+        left: 10%;
+    }
+
+    .mini-map-container {
+        top: 10%;
+        right: 35%;
+        height: 40%
+    }
+
+    .container {
+        position: relative;
+    }
+
+    .input-container {
+        height: 32px;
+    }
+
+    .sprite-img {
+        transform: scale(1);
+    }
+
+    .bird-img {
+        bottom: -8px;
+    }
+
+    @keyframes bounce {
+        0% {
+            top: 8px;
+        }
+        50% {
+            top: 4px;
+        }
+        100% {
+            top: 8px;
+        }
+    }
+}

@@ -10,6 +10,7 @@ import {
     ScaleComp,
     SpriteComp,
     TimerComp,
+    ZComp,
 } from "kaboom";
 
 // Game
@@ -47,6 +48,28 @@ export type Player = Entity &
                 canInhale: boolean;
             } & TimerComp
     >;
+
+export type Map = GameObj<ScaleComp | PosComp | ZComp | {
+    width: number;
+    height: number;
+}>;
+
+export type GameData = {
+    scenesScreenshot: string[];
+    numRounds: number;
+    times: number[];
+    currentScreen: "start" | "rounds" | "end";
+    seeds: number[];
+};
+
+export type GameDataAction = {
+    type: "changedScreen" | "nextScene" | "reset";
+    newScreenshot: string;
+    nextScreen?: "start" | "rounds" | "end";
+    newSeed?: number;
+    newTime?: number;
+    newRounds?: number;
+};
 
 // Map generation
 export type RectCollider = {

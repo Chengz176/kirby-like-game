@@ -1,8 +1,8 @@
-import { GameObj, Vec2 } from "kaboom";
+import { GameObj, KaboomCtx, Vec2 } from "kaboom";
 import { SCALE } from "../constants";
-import { k } from "../kaboomCtx";
 
 export const throwFireball = (
+    k: KaboomCtx,
     initVel: Vec2,
     initPos: Vec2,
     fromTag: string
@@ -26,14 +26,14 @@ export const throwFireball = (
 
     fireball.onCollide("platform", (_, collision) => {
         if (collision?.isBottom() || collision?.isTop()) {
-            fireball.move(fireball.vel.x, -5 * fireball.vel.y);
+            fireball.vel = k.vec2(fireball.vel.x, -fireball.vel.y);
             return;
         }
 
-        fireball.move(-1 * fireball.vel.x, fireball.vel.y);
+        fireball.vel = k.vec2(-fireball.vel.x, fireball.vel.y);
     });
 
-    fireball.onCollide('fireball', () => fireball.destroy());
+    fireball.onCollide("fireball", () => fireball.destroy());
 
     fireball.onCollide("player", () => fireball.destroy());
 

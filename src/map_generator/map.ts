@@ -10,6 +10,9 @@ import {
 import { Coord2D, RectCollider, SpawnPoints, Tile } from "../definitions";
 import { NWFC } from "./NWFC";
 import { initRandNumGen } from "../helpers";
+import cloudTileset from "../assets/cloud-tileset.json";
+import pillarTileset from "../assets/pillar-tileset.json";
+import tileset from "../assets/tileset.json";
 
 export const makeMap = async (k: KaboomCtx, seed?: number) => {
     const randNumGen = initRandNumGen(seed);
@@ -79,13 +82,13 @@ export const makeMap = async (k: KaboomCtx, seed?: number) => {
     const backgroundLayer = makeBackgroundLayer.bind(null, k, width, height);
 
     const makeLayers = [
-        backgroundLayer("cloud-tileset.json", randNumGen.seed()),
-        backgroundLayer("pillar-tileset.json", randNumGen.seed()),
+        backgroundLayer(cloudTileset, randNumGen.seed()),
+        backgroundLayer(pillarTileset, randNumGen.seed()),
         makeLevelLayer(
             k,
             width,
             height,
-            "tileset.json",
+            tileset,
             spawnPoints,
             randNumGen.seed()
         ),
@@ -102,19 +105,16 @@ async function makeLevelLayer(
     k: KaboomCtx,
     width: number,
     height: number,
-    tilesetPath: string,
+    tileset: Tile[],
     spawnPoints: SpawnPoints,
     seed?: number
 ) {
     const randNum = initRandNumGen(seed).randNum;
 
-    const map = k.make([k.pos(0)]);
-
-    const data = await fetch(tilesetPath);
-    const tileset: Tile[] = await data.json();
+    const map = k.make([k.pos(0), 'levelLayer']);
 
     const nwfc = new NWFC(tileset, width, height, randNum);
-    const airProp = randNum() * 0.3 + 0.4;
+    const airProp = randNum() * 0.2 + 0.6;
 
     nwfc.frameProportions = { 0: airProp, 60: (7 * (1 - airProp)) / 12 };
     const tilemap = nwfc.generateMap();
@@ -236,6 +236,7 @@ async function makeLevelLayer(
                         : k.opacity(1),
                     k.pos(FRAME_SIDE * col, FRAME_SIDE * row),
                     k.offscreen({ hide: true }),
+                    !isAirTile[i] && tile.frame !== GRASS_FRAME ? 'platformTile' : ""
                 ]);
             }
         }
@@ -271,13 +272,10 @@ async function makeBackgroundLayer(
     k: KaboomCtx,
     width: number,
     height: number,
-    tilesetPath: string,
+    tileset: Tile[],
     seed?: number
 ) {
     const randNum = initRandNumGen(seed).randNum;
-
-    const res = await fetch(tilesetPath);
-    const tileset = await res.json();
 
     const map = k.make([k.pos(0), k.z(-1)]);
 
