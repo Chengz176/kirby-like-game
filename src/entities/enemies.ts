@@ -88,6 +88,7 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
         if (!flame.isJumping() && !flame.isOffScreen()) {
             k.add(
                 throwFireball(
+                    k,
                     k.vec2(-200, 50),
                     k.vec2(
                         flame.pos.x + (FRAME_SIDE / 2) * SCALE,
@@ -98,6 +99,7 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
             );
             k.add(
                 throwFireball(
+                    k,
                     k.vec2(200, 50),
                     k.vec2(
                         flame.pos.x + (FRAME_SIDE / 2) * SCALE,
@@ -114,7 +116,7 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
         if (flame.pos.y > mapHeight) {
             flame.destroy();
         }
-    })
+    });
 }
 
 export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
@@ -207,7 +209,7 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
         if (guy.pos.y > mapHeight) {
             guy.destroy();
         }
-    })
+    });
 
     detectWall.onCollide("platform", () => {
         if (guy.state !== "idle") {
