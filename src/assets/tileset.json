@@ -1,0 +1,172 @@
+[
+	{
+		"edges": [0, 0, 0, 0],
+		"frame": 0,
+		"rotation": 0
+	},
+	{
+		"edges": [0, 0, 1, 0],
+		"frame": 40,
+		"rotation": 0
+	},
+	{
+		"edges": [0, 0, 2, 0],
+		"frame": 49,
+		"rotation": 0
+	},
+	{
+		"edges": [1, 0, 2, 0],
+		"frame": 49,
+		"rotation": 0
+	},
+	{
+		"edges": [2, 0, 0, 0],
+		"frame": 49,
+		"rotation": 180
+	},
+	{
+		"edges": [2, 0, 1, 0],
+		"frame": 49,
+		"rotation": 180
+	},
+	{
+		"edges": [2, 0, 2, 0],
+		"frame": 58,
+		"rotation": 0
+	},
+	{
+		"edges": [0, 2, 0, 0],
+		"frame": 49,
+		"rotation": 270
+	},
+	{
+		"edges": [0, 2, 1, 0],
+		"frame": 49,
+		"rotation": 270
+	},
+	{
+		"edges": [0, 2, 2, 0],
+		"frame": 50,
+		"rotation": 0
+	},
+	{
+		"edges": [1, 2, 0, 0],
+		"frame": 49,
+		"rotation": 270
+	},
+	{
+		"edges": [1, 2, 1, 0],
+		"frame": 49,
+		"rotation": 270
+	},
+	{
+		"edges": [1, 2, 2, 0],
+		"frame": 50,
+		"rotation": 0
+	},
+	{
+		"edges": [2, 2, 0, 0],
+		"frame": 50,
+		"rotation": 270
+	},
+	{
+		"edges": [2, 2, 1, 0],
+		"frame": 50,
+		"rotation": 270
+	},
+	{
+		"edges": [2, 2, 2, 0],
+		"frame": 51,
+		"rotation": 270
+	},
+	{
+		"edges": [0, 0, 0, 2],
+		"frame": 49,
+		"rotation": 90
+	},
+	{
+		"edges": [0, 0, 1, 2],
+		"frame": 49,
+		"rotation": 90
+	},
+	{
+		"edges": [0, 0, 2, 2],
+		"frame": 50,
+		"rotation": 90
+	},
+	{
+		"edges": [1, 0, 0, 2],
+		"frame": 49,
+		"rotation": 90
+	},
+	{
+		"edges": [1, 0, 1, 2],
+		"frame": 49,
+		"rotation": 90
+	},
+	{
+		"edges": [1, 0, 2, 2],
+		"frame": 50,
+		"rotation": 90
+	},
+	{
+		"edges": [2, 0, 0, 2],
+		"frame": 50,
+		"rotation": 180
+	},
+	{
+		"edges": [2, 0, 1, 2],
+		"frame": 50,
+		"rotation": 180
+	},
+	{
+		"edges": [2, 0, 2, 2],
+		"frame": 51,
+		"rotation": 90
+	},
+	{
+		"edges": [0, 2, 0, 2],
+		"frame": 58,
+		"rotation": 90
+	},
+	{
+		"edges": [0, 2, 1, 2],
+		"frame": 58,
+		"rotation": 90
+	},
+	{
+		"edges": [0, 2, 2, 2],
+		"frame": 51,
+		"rotation": 0
+	},
+	{
+		"edges": [1, 2, 0, 2],
+		"frame": 58,
+		"rotation": 90
+	},
+	{
+		"edges": [1, 2, 1, 2],
+		"frame": 58,
+		"rotation": 90
+	},
+	{
+		"edges": [1, 2, 2, 2],
+		"frame": 51,
+		"rotation": 0
+	},
+	{
+		"edges": [2, 2, 0, 2],
+		"frame": 51,
+		"rotation": 180
+	},
+	{
+		"edges": [2, 2, 1, 2],
+		"frame": 51,
+		"rotation": 180
+	},
+	{
+		"edges": [2, 2, 2, 2],
+		"frame": 60,
+		"rotation": 0
+	}
+]

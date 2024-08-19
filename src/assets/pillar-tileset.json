@@ -1,0 +1,48 @@
+[
+    {
+        "edges": [0, 0, 0, 0],
+        "frame": 0,
+        "rotation": 0
+    },
+    {
+        "edges": [0, 0, 1, 0],
+        "frame": 53,
+        "rotation": 0
+    },
+    {
+        "edges": [1, 0, 1, 0],
+        "frame": 62,
+        "rotation": 0
+    },
+    {
+        "edges": [0, 5, 6, 0],
+        "frame": 64,
+        "rotation": 0
+    },
+    {
+        "edges": [0, 0, 7, 5],
+        "frame": 65,
+        "rotation": 0
+    },
+    {
+        "edges": [6, 8, 9, 0],
+        "frame": 73,
+        "rotation": 0
+    },
+    {
+        "edges": [7, 0, 10, 8],
+        "frame": 74,
+        "rotation": 0
+    },
+    {
+        "edges": [9, 11, 9, 0],
+        "frame": 82,
+        "rotation": 0
+    },
+    {
+        "edges": [10, 0, 10, 11],
+        "frame": 83,
+        "rotation": 0
+    }
+
+]
