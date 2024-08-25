@@ -111,7 +111,7 @@ async function makeLevelLayer(
 ) {
     const randNum = initRandNumGen(seed).randNum;
 
-    const map = k.make([k.pos(0), 'levelLayer']);
+    const map = k.make([k.pos(0), "levelLayer"]);
 
     const nwfc = new NWFC(tileset, width, height, randNum);
     const airProp = randNum() * 0.2 + 0.6;
@@ -170,7 +170,7 @@ async function makeLevelLayer(
                     FRAME_SIDE,
                     FRAME_SIDE
                 ),
-                collisionIgnore: ["platform", "exit"],
+                collisionIgnore: ["platform", "exit", "enemy", "fireball"],
             }),
             k.body({ isStatic: true }),
             k.pos(
@@ -236,7 +236,9 @@ async function makeLevelLayer(
                         : k.opacity(1),
                     k.pos(FRAME_SIDE * col, FRAME_SIDE * row),
                     k.offscreen({ hide: true }),
-                    !isAirTile[i] && tile.frame !== GRASS_FRAME ? 'platformTile' : ""
+                    !isAirTile[i] && tile.frame !== GRASS_FRAME
+                        ? "platformTile"
+                        : "",
                 ]);
             }
         }

@@ -12,7 +12,7 @@ export default function InfoList({children, title} : {children?: React.ReactNode
             borderRadius: 10,
             boxShadow: '1px 1px black',
             backgroundColor: 'crimson',
-            overflowY: "scroll",
+            overflowY: "auto",
         }}>
             <h2 style={{textAlign: "center"}}>{title}</h2>
             {children}
