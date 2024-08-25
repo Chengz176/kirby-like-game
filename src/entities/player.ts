@@ -7,7 +7,6 @@ import {
     BIRD_TYPE,
 } from "../constants";
 import { Coord2D, Player } from "../definitions";
-import { SceneStates } from "../states";
 import { throwFireball } from "./fireball";
 
 export class PlayerEntity {
@@ -105,8 +104,6 @@ export class PlayerEntity {
 
         //Reached the exit door
         player.onCollide("exit", () => {
-            SceneStates.currentScene =
-                (SceneStates.currentScene + 1) % SceneStates.scenes.length;
             this.#k.go("loading");
         });
 

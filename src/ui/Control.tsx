@@ -13,7 +13,7 @@ export default function Control({
     toggleInfo,
 }: {
     handleEnd: () => void;
-    scene?: Scene;
+    scene: Scene;
     togglePause: () => void;
     miniMap: boolean;
     toggleMiniMap: () => void;
@@ -27,9 +27,9 @@ export default function Control({
     };
 
     if (!options) {
-        scene?.resume();
+        scene.resume();
     } else {
-        scene?.pause();
+        scene.pause();
     }
 
     const toggleOptions = () => {
@@ -38,24 +38,22 @@ export default function Control({
     };
 
     useEffect(() => {
-        if (scene !== undefined) {
-            setControl(scene.k.isTouchscreen());
-            if (!scene.k.isTouchscreen()) {
-                scene.k.canvas.addEventListener("keydown", (e) => {
+        setControl(scene.k.isTouchscreen());
+        if (!scene.k.isTouchscreen()) {
+            scene.k.canvas.addEventListener("keydown", (e) => {
+                if (e.key === "b") {
+                    toggleOptions();
+                }
+            });
+
+            return () =>
+                scene.k.canvas.removeEventListener("keydown", (e) => {
                     if (e.key === "b") {
                         toggleOptions();
                     }
                 });
-
-                return () =>
-                    scene.k.canvas.removeEventListener("keydown", (e) => {
-                        if (e.key === "b") {
-                            toggleOptions();
-                        }
-                    });
-            }
         }
-    }, [scene]);
+    }, []);
 
     return (
         <>

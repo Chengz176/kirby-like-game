@@ -270,6 +270,35 @@ function ControlsInfo() {
                 }
                 description={"Jump"}
             />
+            <InfoItem
+                demo={
+                    <div>
+                        <div
+                            style={{
+                                position: "relative",
+                                width: "40%",
+                                aspectRatio: "1 / 1",
+                            }}
+                        >
+                            <ControlButton
+                                onPointerDown={() => {}}
+                                onPointerUp={() => {}}
+                                width="80%"
+                            >
+                                <strong
+                                    style={{ fontSize: "1em", color: "silver" }}
+                                >
+                                    Options
+                                </strong>
+                            </ControlButton>
+                        </div>
+                        <div>
+                            <strong>{"/ Key b"}</strong>
+                        </div>
+                    </div>
+                }
+                description={"Show / Hide Options"}
+            />
         </InfoList>
     );
 }

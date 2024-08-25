@@ -23,13 +23,14 @@ export default function RoundsScreen(this: any) {
     const [numJump, setNumJump] = useState<number>(0);
     const [pause, setPause] = useState<boolean>(false);
     const [miniMap, setMiniMap] = useState<boolean>(true);
-    const [info, setInfo] = useState<boolean>(false);
+    const [info, setInfo] = useState<boolean>(true);
+    const [screenshot, setScreenshot] = useState<string>("");
 
     useEffect(() => {
         if (gameDispatch !== null && rounds > -1 && k !== undefined) {
             gameDispatch({
                 type: "nextScene",
-                newScreenshot: k.screenshot(),
+                newScreenshot: screenshot,
                 newSeed: seed,
                 newTime: time,
             } as GameDataAction);
@@ -106,7 +107,6 @@ export default function RoundsScreen(this: any) {
 
         k.go("loading");
 
-
         return () => {
             k.quit();
             setRounds((prevRounds) => prevRounds - 1);
@@ -137,6 +137,7 @@ export default function RoundsScreen(this: any) {
 
     const handleNextScene = () => {
         setRounds((prevRound) => prevRound + 1);
+        setScreenshot(k.screenshot());
     };
 
     const handleEnd = () => {
@@ -182,17 +183,19 @@ export default function RoundsScreen(this: any) {
                     ) : null}
                 </div>
             </div>
-            <div className="container" style={{ pointerEvents: "none" }}>
-                {miniMap ? <MiniMap scene={scene} /> : null}
-                <Control
-                    toggleInfo={toggleInfo}
-                    handleEnd={handleEnd}
-                    scene={scene}
-                    togglePause={togglePause}
-                    miniMap={miniMap}
-                    toggleMiniMap={toggleMiniMap}
-                />
-            </div>
+            {scene !== undefined ? (
+                <div className="container" style={{ pointerEvents: "none" }}>
+                    {miniMap ? <MiniMap scene={scene} /> : null}
+                    <Control
+                        toggleInfo={toggleInfo}
+                        handleEnd={handleEnd}
+                        scene={scene}
+                        togglePause={togglePause}
+                        miniMap={miniMap}
+                        toggleMiniMap={toggleMiniMap}
+                    />
+                </div>
+            ) : null}
             {info ? <Info handleCloseInfo={toggleInfo} /> : null}
         </>
     );
