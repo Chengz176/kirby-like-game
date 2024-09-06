@@ -12,18 +12,23 @@ import { throwFireball } from "./fireball";
 export class PlayerEntity {
     #LEFT = -1;
     #RIGHT = 1;
+    #RELEASED = 1;
+    #PRESSED = 2;
+    #DOWN = 3;
     #DEFAULT_NUM_JUMP = 5;
     #DEFAULT_HP = 3;
     #player: Player;
     #inhaleEffectRef;
     #k: KaboomCtx;
-    #support = -1;
-    #supportEffect;
+    #ability = -1;
+    #abilityEffect;
     #numJump = 0;
     #maxJumps = this.#DEFAULT_NUM_JUMP;
     #scene = "";
     #initialPos: Vec2;
-    #move?: string;
+    #moves: {
+        [key: string]: number | undefined;
+    } = {};
     #controls: EventController[] = [];
 
     constructor(
@@ -40,7 +45,7 @@ export class PlayerEntity {
                 shape: new this.#k.Rect(this.#k.vec2(0, 2), 12, 11),
             }),
             this.#k.body(),
-            this.#k.pos(pos.x * SCALE, pos.y * SCALE),
+            this.#k.pos(pos.x * SCALE, (pos.y - (FRAME_SIDE / 2)) * SCALE),
             this.#k.anchor("center"),
             this.#k.scale(SCALE),
             this.#k.doubleJump(Infinity),
@@ -70,7 +75,7 @@ export class PlayerEntity {
             }
 
             // Get damage from colliding with the enemy
-            if (this.#support === GUY_TYPE) {
+            if (this.#ability === GUY_TYPE) {
                 this.#reset();
                 return;
             }
@@ -142,7 +147,7 @@ export class PlayerEntity {
         this.#inhaleEffectRef = inhaleEffect;
         this.#player = player;
 
-        this.#supportEffect = this.#k.make([
+        this.#abilityEffect = this.#k.make([
             this.#k.scale(SCALE),
             this.#k.circle(2.5 * SCALE),
             this.#k.color(this.#k.YELLOW),
@@ -156,19 +161,24 @@ export class PlayerEntity {
     }
 
     add() {
+        this.removeControls();
         this.#controls = [];
         this.#k.add(this.#player);
         this.#k.add(this.#inhaleEffectRef);
-        this.#k.add(this.#supportEffect);
+        this.#k.add(this.#abilityEffect);
         this.#setControls();
     }
 
     pauseControl() {
-        this.#controls.forEach(control => control.paused = true);
+        this.#controls.forEach((control) => (control.paused = true));
     }
 
     resumeControl() {
-        this.#controls.forEach(control => control.paused = false);
+        this.#controls.forEach((control) => (control.paused = false));
+    }
+
+    removeControls() {
+        this.#controls.forEach((control) => control.cancel());
     }
 
     get player() {
@@ -184,16 +194,11 @@ export class PlayerEntity {
     }
 
     buttonDown(newMove: string) {
-        this.#move = newMove;
-        this.#k.canvas.dispatchEvent(new MouseEvent("mousedown"));
+        this.#moves[newMove] = this.#PRESSED;
     }
 
-    buttonUp() {
-        this.#k.canvas.dispatchEvent(new MouseEvent("mouseup"));
-    }
-
-    set move(newMove: "a" | "w" | "s" | "d" | "j" | "k" | undefined) {
-        this.#move = newMove;
+    buttonUp(move: string) {
+        this.#moves[move] = this.#RELEASED;
     }
 
     onJump(action: () => void) {
@@ -230,7 +235,7 @@ export class PlayerEntity {
                             this.#shootProjectile();
                             break;
                         case "s":
-                            this.#setSupport();
+                            this.#setAbility();
                             break;
                         case "w":
                             this.#reset();
@@ -256,52 +261,58 @@ export class PlayerEntity {
         }
 
         this.#controls.push(
-            this.#k.onMouseDown(() => {
-                switch (this.#move) {
-                    case "a":
-                        this.#moveLeft();
-                        break;
-                    case "d":
-                        this.#moveRight();
-                        break;
-                    case "j":
-                        this.#inhaling();
-                        break;
-                    default:
-                        break;
-                }
-            })
-        );
-
-        this.#controls.push(
-            this.#k.onMousePress(() => {
-                switch (this.#move) {
-                    case "k":
-                        this.#jump();
-                        break;
-                    case "j":
-                        this.#shootProjectile();
-                        break;
-                    case "s":
-                        this.#setSupport();
-                        break;
-                    case "w":
-                        this.#reset();
-                        break;
-                    default:
-                        break;
-                }
-            })
-        );
-
-        this.#controls.push(
-            this.#k.onMouseRelease(() => {
-                switch (this.#move) {
-                    case "j":
-                        this.#inhaleEnd();
-                        break;
-                    default:
-                        break;
+            this.#player.onUpdate(() => {
+                for (const move of Object.keys(this.#moves)) {
+                    if (this.#moves[move] !== undefined) {
+                        switch (this.#moves[move]) {
+                            case this.#DOWN:
+                                switch (move) {
+                                    case "a":
+                                        this.#moveLeft();
+                                        break;
+                                    case "d":
+                                        this.#moveRight();
+                                        break;
+                                    case "j":
+                                        this.#inhaling();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            case this.#PRESSED:
+                                switch (move) {
+                                    case "j":
+                                        this.#shootProjectile();
+                                        break;
+                                    case "k":
+                                        this.#jump();
+                                        break;
+                                    case "w":
+                                        this.#reset();
+                                        break;
+                                    case "s":
+                                        this.#setAbility();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                this.#moves[move] = this.#DOWN;
+                                break;
+                            case this.#RELEASED:
+                                switch (move) {
+                                    case "j":
+                                        this.#inhaleEnd();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                this.#moves[move] = undefined;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
             })
         );
@@ -311,6 +322,8 @@ export class PlayerEntity {
         this.#player.pos = this.#initialPos;
         this.#player.heal(this.#DEFAULT_HP);
         this.#reset();
+        this.#numJump = 0;
+        this.#moves = {};
         this.#k.go(this.#scene);
     }
 
@@ -359,7 +372,7 @@ export class PlayerEntity {
     }
 
     #shootProjectile() {
-        if (this.#support == FLAME_TYPE) {
+        if (this.#ability == FLAME_TYPE) {
             this.#k.add(
                 throwFireball(
                     this.#k,
@@ -368,7 +381,7 @@ export class PlayerEntity {
                     "player"
                 )
             );
-            return;
+            return true;
         }
 
         if (this.#player.enemyInhaled > -1) {
@@ -412,35 +425,39 @@ export class PlayerEntity {
                 this.#player.canInhale = true;
                 this.#player.play("kirbIdle");
             });
+
+            return true;
         }
+
+        return false;
     }
 
-    #setSupport() {
+    #setAbility() {
         if (this.#player.enemyInhaled > -1) {
             const enemyInhaled = this.#player.enemyInhaled;
             this.#reset();
-            this.#support = enemyInhaled;
-            switch (this.#support) {
+            this.#ability = enemyInhaled;
+            switch (this.#ability) {
                 case GUY_TYPE:
-                    this.#supportEffect.color = this.#k.BLACK;
+                    this.#abilityEffect.color = this.#k.BLACK;
                     break;
                 case FLAME_TYPE:
                     this.#player.canInhale = false;
-                    this.#supportEffect.color = this.#k.RED;
+                    this.#abilityEffect.color = this.#k.RED;
                     break;
                 case BIRD_TYPE:
                     this.#maxJumps = Infinity;
-                    this.#supportEffect.color = this.#k.WHITE;
+                    this.#abilityEffect.color = this.#k.WHITE;
                     break;
                 default:
                     break;
             }
 
-            this.#supportEffect.tween(
+            this.#abilityEffect.tween(
                 0,
                 0.3,
                 0.5,
-                (val) => (this.#supportEffect.opacity = val)
+                (val) => (this.#abilityEffect.opacity = val)
             );
         }
     }
@@ -448,14 +465,14 @@ export class PlayerEntity {
     #reset() {
         this.#maxJumps = this.#DEFAULT_NUM_JUMP;
 
-        if (this.#support > -1) {
-            this.#supportEffect.tween(
-                this.#supportEffect.opacity,
+        if (this.#ability > -1) {
+            this.#abilityEffect.tween(
+                this.#abilityEffect.opacity,
                 0,
                 0.5,
-                (val) => (this.#supportEffect.opacity = val)
+                (val) => (this.#abilityEffect.opacity = val)
             );
-            this.#support = -1;
+            this.#ability = -1;
         }
 
         this.#player.canInhale = true;
