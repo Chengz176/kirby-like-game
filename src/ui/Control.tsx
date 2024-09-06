@@ -20,7 +20,7 @@ export default function Control({
     toggleInfo: () => void;
 }) {
     const [control, setControl] = useState<boolean>(false);
-    const [options, setOptions] = useState<boolean>(false);
+    const [options, setOptions] = useState<boolean>(true);
 
     const toggleControl = () => {
         setControl((prevState) => prevState !== true);
