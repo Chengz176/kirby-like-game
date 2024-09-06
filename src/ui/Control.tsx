@@ -37,27 +37,26 @@ export default function Control({
         togglePause();
     };
 
+    const handleOptionsPressed = (e: KeyboardEvent) => {
+        if (e.key === 'b') {
+            toggleOptions();
+        }
+    }
+
     useEffect(() => {
         setControl(scene.k.isTouchscreen());
         if (!scene.k.isTouchscreen()) {
-            scene.k.canvas.addEventListener("keydown", (e) => {
-                if (e.key === "b") {
-                    toggleOptions();
-                }
-            });
+            scene.k.canvas.addEventListener("keydown", handleOptionsPressed);
 
-            return () =>
-                scene.k.canvas.removeEventListener("keydown", (e) => {
-                    if (e.key === "b") {
-                        toggleOptions();
-                    }
-                });
+            return () => {
+                scene.k.canvas.removeEventListener("keydown", handleOptionsPressed);
+            };
         }
     }, []);
 
     return (
         <>
-            {control && scene ? (
+            {control && scene !== undefined ? (
                 <ControlMovement
                     playerEntity={scene.kirb}
                     toggleOptions={toggleOptions}
@@ -316,12 +315,12 @@ export function ControlButton({
                 onTouchStart={(event) => {
                     // event.preventDefault();
                     handleTouchStart!();
-                    event.currentTarget.style.opacity = '1';
+                    event.currentTarget.style.opacity = "1";
                 }}
                 onTouchEnd={(event) => {
                     event.preventDefault();
                     handleTouchEnd!();
-                    event.currentTarget.style.opacity = '0.5';
+                    event.currentTarget.style.opacity = "0.5";
                 }}
             >
                 {children}

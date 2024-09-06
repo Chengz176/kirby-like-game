@@ -21,7 +21,7 @@ export default function RoundsScreen(this: any) {
     const [seed, setSeed] = useState<number>(-1);
     const [hp, setHp] = useState<number>();
     const [numJump, setNumJump] = useState<number>(0);
-    const [pause, setPause] = useState<boolean>(false);
+    const [pause, setPause] = useState<boolean>(true);
     const [miniMap, setMiniMap] = useState<boolean>(true);
     const [info, setInfo] = useState<boolean>(true);
     const [screenshot, setScreenshot] = useState<string>("");
@@ -136,8 +136,12 @@ export default function RoundsScreen(this: any) {
     const gameDispatch = useContext(GameDispatchContext);
 
     const handleNextScene = () => {
-        setRounds((prevRound) => prevRound + 1);
-        setScreenshot(k.screenshot());
+        k.canvas.toBlob((blob) => {
+            if (blob !== null) {
+                setScreenshot(URL.createObjectURL(blob));
+                setRounds((prevRound) => prevRound + 1);
+            }
+        }, "image/jpeg")
     };
 
     const handleEnd = () => {

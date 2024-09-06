@@ -81,6 +81,9 @@ export default function EndScreen() {
                                 <img
                                     style={{ width: "100%", height: "100%" }}
                                     src={summary.screenshot}
+                                    onLoad={() => {
+                                        URL.revokeObjectURL(summary.screenshot)
+                                    }}
                                 />
                             }
                             description={
