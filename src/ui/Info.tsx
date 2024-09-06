@@ -35,7 +35,7 @@ export default function Info({
         >
             <div
                 style={{
-                    padding: '5% 10% 0 10%',
+                    padding: "5% 10% 0 10%",
                     position: "relative",
                     width: "100%",
                     height: "90%",
@@ -119,8 +119,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                                 rotate="0deg"
                             >
@@ -145,8 +145,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                                 rotate="90deg"
                             >
@@ -171,8 +171,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                                 rotate="180deg"
                             >
@@ -197,8 +197,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                                 rotate="270deg"
                             >
@@ -223,8 +223,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                             >
                                 <strong
@@ -252,8 +252,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                             >
                                 <strong
@@ -281,8 +281,8 @@ function ControlsInfo() {
                             }}
                         >
                             <ControlButton
-                                onPointerDown={() => {}}
-                                onPointerUp={() => {}}
+                                onTouchStart={() => {}}
+                                onTouchEnd={() => {}}
                                 width="80%"
                             >
                                 <strong

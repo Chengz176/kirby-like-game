@@ -279,6 +279,7 @@ function RoundsSlider({
             className="input-container"
             style={{
                 columnGap: "10%",
+                touchAction: 'none',
             }}
         >
             <span
@@ -298,8 +299,8 @@ function RoundsSlider({
                     width: "60%",
                     height: "80%",
                     position: "relative",
-                    borderLeft: "1px solid black",
-                    borderRight: "1px solid black",
+                    borderLeft: "10px solid black",
+                    borderRight: "10px solid black",
                 }}
                 onPointerDown={(e) => {
                     e.preventDefault();
@@ -326,7 +327,7 @@ function RoundsSlider({
                 <div
                     style={{
                         width: "100%",
-                        height: "2%",
+                        height: "10%",
                         position: "relative",
                         top: "49%",
                         backgroundColor: "black",

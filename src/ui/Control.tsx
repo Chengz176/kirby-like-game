@@ -57,9 +57,9 @@ export default function Control({
 
     return (
         <>
-            {control ? (
+            {control && scene ? (
                 <ControlMovement
-                    playerEntity={scene!.kirb}
+                    playerEntity={scene.kirb}
                     toggleOptions={toggleOptions}
                 />
             ) : null}
@@ -149,7 +149,7 @@ function ControlMovement({
     playerEntity,
     toggleOptions,
 }: {
-    playerEntity?: PlayerEntity;
+    playerEntity: PlayerEntity;
     toggleOptions: () => void;
 }) {
     return (
@@ -173,16 +173,16 @@ function ControlMovement({
                 }}
             >
                 <ControlButton
-                    onPointerDown={() => playerEntity!.buttonDown("w")}
-                    onPointerUp={() => playerEntity!.buttonUp()}
+                    onTouchStart={() => playerEntity.buttonDown("w")}
+                    onTouchEnd={() => playerEntity.buttonUp("w")}
                     width="40%"
                     left="30%"
                 >
                     <Arrow />
                 </ControlButton>
                 <ControlButton
-                    onPointerDown={() => playerEntity!.buttonDown("d")}
-                    onPointerUp={() => playerEntity!.buttonUp()}
+                    onTouchStart={() => playerEntity.buttonDown("d")}
+                    onTouchEnd={() => playerEntity.buttonUp("d")}
                     width="40%"
                     rotate="90deg"
                     top="30%"
@@ -191,8 +191,8 @@ function ControlMovement({
                     <Arrow />
                 </ControlButton>
                 <ControlButton
-                    onPointerDown={() => playerEntity!.buttonDown("s")}
-                    onPointerUp={() => playerEntity!.buttonUp()}
+                    onTouchStart={() => playerEntity.buttonDown("s")}
+                    onTouchEnd={() => playerEntity.buttonUp("s")}
                     width="40%"
                     rotate="180deg"
                     top="60%"
@@ -201,8 +201,8 @@ function ControlMovement({
                     <Arrow />
                 </ControlButton>
                 <ControlButton
-                    onPointerDown={() => playerEntity!.buttonDown("a")}
-                    onPointerUp={() => playerEntity!.buttonUp()}
+                    onTouchStart={() => playerEntity.buttonDown("a")}
+                    onTouchEnd={() => playerEntity.buttonUp("a")}
                     width="40%"
                     rotate="270deg"
                     top="30%"
@@ -223,8 +223,8 @@ function ControlMovement({
                 }}
             >
                 <ControlButton
-                    onPointerDown={() => playerEntity!.buttonDown("j")}
-                    onPointerUp={() => playerEntity!.buttonUp()}
+                    onTouchStart={() => playerEntity.buttonDown("j")}
+                    onTouchEnd={() => playerEntity.buttonUp("j")}
                     width="40%"
                     top="50%"
                     left="10%"
@@ -234,8 +234,8 @@ function ControlMovement({
                     </strong>
                 </ControlButton>
                 <ControlButton
-                    onPointerDown={() => playerEntity!.buttonDown("k")}
-                    onPointerUp={() => playerEntity!.buttonUp()}
+                    onTouchStart={() => playerEntity.buttonDown("k")}
+                    onTouchEnd={() => playerEntity.buttonUp("k")}
                     width="40%"
                     top="10%"
                     left="50%"
@@ -256,8 +256,8 @@ function ControlMovement({
                 }}
             >
                 <ControlButton
-                    onPointerUp={toggleOptions}
-                    onPointerDown={() => {}}
+                    onTouchEnd={toggleOptions}
+                    onTouchStart={() => {}}
                     width={"fit-content"}
                 >
                     <strong style={{ fontSize: "1rem", color: "silver" }}>
@@ -271,8 +271,8 @@ function ControlMovement({
 
 export function ControlButton({
     children,
-    onPointerDown: handlePointerDown,
-    onPointerUp: handlePointerUp,
+    onTouchStart: handleTouchStart,
+    onTouchEnd: handleTouchEnd,
     width,
     rotate = "0deg",
     top = 0,
@@ -281,8 +281,8 @@ export function ControlButton({
     left = 0,
 }: {
     children?: React.ReactNode;
-    onPointerUp?: () => void;
-    onPointerDown?: () => void;
+    onTouchEnd?: () => void;
+    onTouchStart?: () => void;
     width: React.CSSProperties["width"];
     rotate?: React.CSSProperties["rotate"];
     top?: React.CSSProperties["top"];
@@ -292,7 +292,7 @@ export function ControlButton({
 }) {
     return (
         <div
-            className="control-button"
+            // className="control-button"
             style={{
                 width,
                 height: "fit-Content",
@@ -311,14 +311,17 @@ export function ControlButton({
                     borderRadius: "50%",
                     rotate,
                     pointerEvents: "visible",
+                    opacity: 0.5,
                 }}
-                onPointerDown={(event) => {
-                    event.preventDefault();
-                    handlePointerDown!();
+                onTouchStart={(event) => {
+                    // event.preventDefault();
+                    handleTouchStart!();
+                    event.currentTarget.style.opacity = '1';
                 }}
-                onPointerUp={(event) => {
+                onTouchEnd={(event) => {
                     event.preventDefault();
-                    handlePointerUp!();
+                    handleTouchEnd!();
+                    event.currentTarget.style.opacity = '0.5';
                 }}
             >
                 {children}
