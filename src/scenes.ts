@@ -7,7 +7,7 @@ import {
 import { initRandNumGen } from "./helpers";
 import { PlayerEntity } from "./entities/player";
 import { BACKGROUND_COLOR, FRAME_SIDE, SCALE } from "./constants";
-import { KaboomCtx } from "kaboom";
+import { EventController, KaboomCtx } from "kaboom";
 import { Coord2D, Map } from "./definitions";
 
 export async function defineScene(
@@ -147,14 +147,19 @@ export class Scene {
     }
 
     platformOnScreen(handleOnScreen: (pos: Coord2D) => void) {
+        const controls: EventController[] = [];
         this.#map.get('levelLayer')[0].get('platformTile').forEach(platform => {
-            platform.onEnterScreen(() => {
+            const control = platform.onEnterScreen(() => {
+                control.cancel();
                 const pos = {
                     x: platform.pos.x * SCALE,
                     y: platform.pos.y * SCALE
                 }
                 handleOnScreen(pos);
             });
+            controls.push(control);
         })
+
+        return controls;
     }
 }
