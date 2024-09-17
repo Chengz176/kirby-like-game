@@ -10,13 +10,14 @@
     user-select: none;
 }
 
-html {
-    height: 100dvh;
-    width: 100dvw;
-}
-
 body {
     background-color: black;
+}
+
+.game-container {
+    width: 100vw;
+    height: calc(100vh - 60px);
+    padding: 1vh 1vw 0 1vw;
 }
 
 .container {
@@ -138,12 +139,12 @@ body {
 
 .mini-map-container {
     width: 30%;
-    height: 30%; 
-    position: absolute; 
+    height: 30%;
+    position: absolute;
     opacity: 0.7;
     right: 1%;
     top: 1%;
-    border: 1px solid white
+    border: 1px solid white;
 }
 
 @media (min-aspect-ratio: 256 / 144) {
@@ -162,7 +163,11 @@ body {
     .mini-map-container {
         top: 10%;
         right: 35%;
-        height: 40%
+        height: 40%;
+    }
+
+    .game-container {
+        height: calc(100vh - 120px);
     }
 
     .container {

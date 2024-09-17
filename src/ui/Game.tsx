@@ -53,13 +53,7 @@ export function Game() {
     );
 
     return (
-        <div
-            style={{
-                width: "100vw",
-                height: "100vh",
-                padding: "1vh 1vw",
-            }}
-        >
+        <div className="game-container">
             <div
                 style={{
                     position: "relative",
