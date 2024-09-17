@@ -24,7 +24,6 @@ export class PlayerEntity {
     #abilityEffect;
     #numJump = 0;
     #maxJumps = this.#DEFAULT_NUM_JUMP;
-    #scene = "";
     #initialPos: Vec2;
     #moves: {
         [key: string]: number | undefined;
@@ -45,7 +44,7 @@ export class PlayerEntity {
                 shape: new this.#k.Rect(this.#k.vec2(0, 2), 12, 11),
             }),
             this.#k.body(),
-            this.#k.pos(pos.x * SCALE, (pos.y - (FRAME_SIDE / 2)) * SCALE),
+            this.#k.pos(pos.x * SCALE, (pos.y - FRAME_SIDE / 2) * SCALE),
             this.#k.anchor("center"),
             this.#k.scale(SCALE),
             this.#k.doubleJump(Infinity),
@@ -185,10 +184,6 @@ export class PlayerEntity {
         return this.#player;
     }
 
-    set scene(sceneName: string) {
-        this.#scene = sceneName;
-    }
-
     get maxJump() {
         return this.#maxJumps;
     }
@@ -319,12 +314,30 @@ export class PlayerEntity {
     }
 
     #respawn() {
-        this.#player.pos = this.#initialPos;
         this.#player.heal(this.#DEFAULT_HP);
         this.#reset();
         this.#numJump = 0;
         this.#moves = {};
-        this.#k.go(this.#scene);
+        this.#player.moveTo(this.#initialPos);
+
+        (async () => {
+            for (let i = 0; i < 3; i++) {
+                await this.#player.tween(
+                    this.#player.opacity,
+                    0,
+                    0.15,
+                    (val) => (this.#player.opacity = val),
+                    this.#k.easings.linear
+                );
+                await this.#player.tween(
+                    this.#player.opacity,
+                    1,
+                    0.15,
+                    (val) => (this.#player.opacity = val),
+                    this.#k.easings.linear
+                );
+            }
+        })();
     }
 
     #moveLeft() {

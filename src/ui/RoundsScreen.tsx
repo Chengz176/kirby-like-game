@@ -4,7 +4,7 @@ import { FRAME_SIDE, SCALE } from "../constants";
 import kirbLikeUrl from "../assets/kirby-like.png";
 import { GameContext, GameDispatchContext } from "../GameContext";
 import { Coord2D, GameDataAction } from "../definitions";
-import { defineLoadingScene, defineScene, Scene } from "../scenes";
+import { defineLoadingScene, defineRoundScene, Scene } from "../scenes";
 import { initRandNumGen } from "../helpers";
 import "../index.css";
 import Control from "./Control";
@@ -21,7 +21,7 @@ export default function RoundsScreen(this: any) {
     const [seed, setSeed] = useState<number>(-1);
     const [hp, setHp] = useState<number>();
     const [numJump, setNumJump] = useState<number>(0);
-    const [pause, setPause] = useState<boolean>(true);
+    const [pause, setPause] = useState<boolean>(false);
     const [miniMap, setMiniMap] = useState<boolean>(true);
     const [info, setInfo] = useState<boolean>(true);
     const [screenshot, setScreenshot] = useState<string>("");
@@ -44,26 +44,24 @@ export default function RoundsScreen(this: any) {
                 ) {
                     newSeed = gameData.seeds[0];
                 }
-                defineScene(k, `${rounds + 1}`, handleNextScene, newSeed).then(
-                    (scene) => {
-                        const kirb = scene.kirb;
-                        kirb.scene = `${rounds + 1}`;
-                        maxJump = kirb.maxJump;
-                        setHp(kirb.player.hp());
-                        kirb.player.onHeal((amount) => {
-                            setHp((prevHp) => prevHp! + amount!);
-                        });
-                        kirb.onJump(() => {
-                            setNumJump((prevNum) => prevNum! + 1);
-                        });
-                        kirb.player.onGround(() => {
-                            setNumJump(0);
-                        });
-                        setScene(scene);
-                        setTime(0);
-                        k.go(`${rounds + 1}`);
-                    }
-                );
+                defineRoundScene(k, handleNextScene, newSeed).then((scene) => {
+                    const kirb = scene.kirb;
+                    maxJump = kirb.maxJump;
+                    setHp(kirb.player.hp());
+                    kirb.player.onHeal((amount) => {
+                        setHp((prevHp) => prevHp! + amount!);
+                    });
+                    kirb.onJump(() => {
+                        setNumJump((prevNum) => prevNum! + 1);
+                    });
+                    kirb.player.onGround(() => {
+                        setNumJump(0);
+                    });
+                    setScene(scene);
+                    setTime(0);
+                    togglePause();
+                    k.go("rounds");
+                });
                 setSeed(newSeed);
             } else {
                 handleEnd();
@@ -88,7 +86,12 @@ export default function RoundsScreen(this: any) {
                 kirbIdle: 0,
                 kirbInhaling: 1,
                 kirbFull: 2,
-                kirbInhaleEffect: { from: 3, to: 8, speed: 15, loop: true },
+                kirbInhaleEffect: {
+                    from: 3,
+                    to: 8,
+                    speed: 15,
+                    loop: true,
+                },
                 shootingStar: 9,
                 flame: { from: 36, to: 37, speed: 4, loop: true },
                 guyIdle: 18,
@@ -140,6 +143,7 @@ export default function RoundsScreen(this: any) {
             if (blob !== null) {
                 setScreenshot(URL.createObjectURL(blob));
                 setRounds((prevRound) => prevRound + 1);
+                togglePause();
             }
         }, "image/jpeg");
     };
@@ -156,7 +160,11 @@ export default function RoundsScreen(this: any) {
 
     return (
         <>
-            <div id={"canvas-container"} ref={containerRef} className="container">
+            <div
+                id={"canvas-container"}
+                ref={containerRef}
+                className="container"
+            >
                 <div
                     style={{
                         position: "absolute",
@@ -164,8 +172,12 @@ export default function RoundsScreen(this: any) {
                         padding: "1% 0 0 1%",
                     }}
                 >
-                    <HealthBar hp={hp} />
-                    <EnergyBar maxJump={maxJump} numJump={numJump} />
+                    {!pause ? (
+                        <>
+                            <HealthBar hp={hp} />
+                            <EnergyBar maxJump={maxJump} numJump={numJump} />
+                        </>
+                    ) : null}
                 </div>
                 <div
                     style={{
@@ -175,8 +187,13 @@ export default function RoundsScreen(this: any) {
                         textAlign: "center",
                     }}
                 >
-                    <h2 style={{ width: "100%", textShadow: "1px 1px black" }}>
-                        Round {rounds + 1}
+                    <h2
+                        style={{
+                            width: "100%",
+                            textShadow: "1px 1px black",
+                        }}
+                    >
+                        {!pause ? `Round ${rounds + 1}` : null}
                     </h2>
                     {!pause ? (
                         <Timer
@@ -188,19 +205,24 @@ export default function RoundsScreen(this: any) {
                 </div>
             </div>
             {scene !== undefined ? (
-                <div className="container" style={{ pointerEvents: "none" }}>
-                    <MiniMap scene={scene} opacity={miniMap ? 1: 0}/>
-                    <Control
-                        toggleInfo={toggleInfo}
-                        handleEnd={handleEnd}
-                        scene={scene}
-                        togglePause={togglePause}
-                        miniMap={miniMap}
-                        toggleMiniMap={toggleMiniMap}
-                    />
-                </div>
+                <>
+                    <div
+                        className="container"
+                        style={{ pointerEvents: "none" }}
+                    >
+                        <MiniMap scene={scene} opacity={miniMap ? 0.5 : 0} />
+                        <Control
+                            toggleInfo={toggleInfo}
+                            handleEnd={handleEnd}
+                            scene={scene}
+                            togglePause={togglePause}
+                            miniMap={miniMap}
+                            toggleMiniMap={toggleMiniMap}
+                        />
+                    </div>
+                    {info ? <Info handleCloseInfo={toggleInfo} /> : null}
+                </>
             ) : null}
-            {info ? <Info handleCloseInfo={toggleInfo} /> : null}
         </>
     );
 }
@@ -226,26 +248,30 @@ function MiniMap({ scene, opacity }: { scene: Scene; opacity: number }) {
 
     useEffect(() => {
         let controllers: EventController[] = [];
-        controllers.push(scene.kirb.player.onUpdate(() => {
-            if (playerCanvasRef.current !== null) {
-                const playerCtx = playerCanvasRef.current.getContext("2d");
-                if (playerCtx !== null) {
-                    playerCtx.clearRect(0, 0, scene.width, scene.height);
-                    playerCtx.fillStyle = "black";
-                    playerCtx.fillRect(0, 0, scene.width, scene.height);
-                    playerCtx.fillStyle = "crimson";
-                    playerCtx.fillRect(
-                        scene.kirb.player.pos.x,
-                        scene.kirb.player.pos.y,
-                        FRAME_SIDE * SCALE,
-                        FRAME_SIDE * SCALE
-                    );
+        controllers.push(
+            scene.kirb.player.onUpdate(() => {
+                if (playerCanvasRef.current !== null) {
+                    const playerCtx = playerCanvasRef.current.getContext("2d");
+                    if (playerCtx !== null) {
+                        playerCtx.clearRect(0, 0, scene.width, scene.height);
+                        playerCtx.fillStyle = "black";
+                        playerCtx.fillRect(0, 0, scene.width, scene.height);
+                        playerCtx.fillStyle = "crimson";
+                        playerCtx.fillRect(
+                            scene.kirb.player.pos.x,
+                            scene.kirb.player.pos.y,
+                            FRAME_SIDE * SCALE,
+                            FRAME_SIDE * SCALE
+                        );
+                    }
                 }
-            }
-        }));
+            })
+        );
 
-        controllers = controllers.concat(...scene.platformOnScreen(handleOnScreen));
-        
+        controllers = controllers.concat(
+            ...scene.platformOnScreen(handleOnScreen)
+        );
+
         if (mapCanvasRef.current !== null && playerCanvasRef.current !== null) {
             mapCanvasRef.current.width = scene.width;
             mapCanvasRef.current.height = scene.height;
@@ -253,10 +279,10 @@ function MiniMap({ scene, opacity }: { scene: Scene; opacity: number }) {
             playerCanvasRef.current.width = scene.width;
         }
 
-        return (() => {
-            controllers.forEach(controller => controller.cancel());
-        })
-    }, []);
+        return () => {
+            controllers.forEach((controller) => controller.cancel());
+        };
+    }, [scene]);
 
     return (
         <div className="mini-map-container" style={{ opacity: opacity }}>

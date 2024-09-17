@@ -35,22 +35,28 @@ function makeInhalable(k: KaboomCtx, enemy: Entity) {
                     const gap = 3 * FRAME_SIDE;
                     if (
                         diffX < gap &&
-                        Math.abs(diffY) <= (3 * FRAME_SIDE) / 4
+                        Math.abs(diffY) <= gap / 4
                     ) {
                         moveX +=
                             (playerRef.direction * -800 * (gap - diffX)) / gap;
-                        moveY += (diffY / Math.abs(diffY)) * 100;
+                        moveY += (diffY / Math.abs(diffY)) * -800;
                     }
                 }
             }
         }
 
-        enemy.move(moveX, moveY);
+        if (moveX !== 0 || moveY !== 0) {
+            enemy.gravityScale = 0;
+            enemy.move(moveX, moveY);
+            return;
+        }
+
+        enemy.gravityScale = 1;
     });
 }
 
 export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
-    const flame = k.add([
+    const flame = k.make([
         k.sprite("assets", { anim: "flame" }),
         k.scale(SCALE),
         k.pos(
@@ -70,14 +76,14 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
             isInhalable: false,
             type: FLAME_TYPE,
         },
-        k.offscreen({ hide: true }),
+        k.offscreen({ hide: true, pause: true }),
         "enemy",
     ]);
 
     makeInhalable(k, flame);
 
     flame.onStateEnter("idle", () => {
-        k.wait(5, () => flame.enterState("jump"));
+        k.wait(3, () => flame.enterState("jump"));
     });
 
     flame.onStateEnter("jump", () => {
@@ -117,10 +123,16 @@ export function makeFlameEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
             flame.destroy();
         }
     });
+
+    flame.onDestroy(() => {
+        k.wait(5, () => k.add(flame));
+    })
+
+    k.add(flame);
 }
 
 export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
-    const guy = k.add([
+    const guy = k.make([
         k.sprite("assets", { anim: "guyWalk" }),
         k.scale(SCALE),
         k.pos(
@@ -141,7 +153,7 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
             speed: 100,
             type: GUY_TYPE,
         },
-        k.offscreen({ hide: true }),
+        k.offscreen({ hide: true, pause: true }),
         "enemy",
     ]);
 
@@ -222,6 +234,12 @@ export function makeGuyEnemy(k: KaboomCtx, pos: Coord2D, mapHeight: number) {
             guy.enterState("idle");
         }
     });
+
+    guy.onDestroy(() => {
+        k.wait(5, () => k.add(guy));
+    })
+
+    k.add(guy);
 }
 
 export function makeBirdEnemy(
@@ -233,7 +251,7 @@ export function makeBirdEnemy(
         rand_TND(): number;
     }
 ) {
-    const bird = k.add([
+    const bird = k.make([
         k.sprite("assets", { anim: "bird", flipX: true }),
         k.scale(SCALE),
         k.pos(pos.x * SCALE, pos.y * SCALE),
@@ -248,7 +266,6 @@ export function makeBirdEnemy(
         k.rotate(0),
         k.offscreen({
             hide: true,
-            distance: 400,
         }),
         k.health(1),
         k.opacity(),
@@ -307,7 +324,11 @@ export function makeBirdEnemy(
         );
     });
 
-    return bird;
+    bird.onDestroy(() => {
+        k.wait(5, () => k.add(bird));
+    })
+
+    k.add(bird);
 }
 
 function birdMoveAngle(
