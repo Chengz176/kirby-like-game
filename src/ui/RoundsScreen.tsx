@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import kaboom, { KaboomCtx } from "kaboom";
+import kaboom, { EventController, KaboomCtx } from "kaboom";
 import { FRAME_SIDE, SCALE } from "../constants";
 import kirbLikeUrl from "../assets/kirby-like.png";
 import { GameContext, GameDispatchContext } from "../GameContext";
@@ -141,7 +141,7 @@ export default function RoundsScreen(this: any) {
                 setScreenshot(URL.createObjectURL(blob));
                 setRounds((prevRound) => prevRound + 1);
             }
-        }, "image/jpeg")
+        }, "image/jpeg");
     };
 
     const handleEnd = () => {
@@ -156,7 +156,7 @@ export default function RoundsScreen(this: any) {
 
     return (
         <>
-            <div ref={containerRef} className="container">
+            <div id={"canvas-container"} ref={containerRef} className="container">
                 <div
                     style={{
                         position: "absolute",
@@ -189,7 +189,7 @@ export default function RoundsScreen(this: any) {
             </div>
             {scene !== undefined ? (
                 <div className="container" style={{ pointerEvents: "none" }}>
-                    {miniMap ? <MiniMap scene={scene} /> : null}
+                    <MiniMap scene={scene} opacity={miniMap ? 1: 0}/>
                     <Control
                         toggleInfo={toggleInfo}
                         handleEnd={handleEnd}
@@ -205,7 +205,7 @@ export default function RoundsScreen(this: any) {
     );
 }
 
-function MiniMap({ scene }: { scene?: Scene }) {
+function MiniMap({ scene, opacity }: { scene: Scene; opacity: number }) {
     const playerCanvasRef = useRef<HTMLCanvasElement>(null);
     const mapCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -225,39 +225,41 @@ function MiniMap({ scene }: { scene?: Scene }) {
     };
 
     useEffect(() => {
-        if (scene !== undefined) {
-            scene.kirb.player.onUpdate(() => {
-                if (playerCanvasRef.current !== null) {
-                    const playerCtx = playerCanvasRef.current.getContext("2d");
-                    if (playerCtx !== null) {
-                        playerCtx.clearRect(0, 0, scene.width, scene.height);
-                        playerCtx.fillStyle = "black";
-                        playerCtx.fillRect(0, 0, scene.width, scene.height);
-                        playerCtx.fillStyle = "crimson";
-                        playerCtx.fillRect(
-                            scene.kirb.player.pos.x,
-                            scene.kirb.player.pos.y,
-                            FRAME_SIDE * SCALE,
-                            FRAME_SIDE * SCALE
-                        );
-                    }
+        let controllers: EventController[] = [];
+        controllers.push(scene.kirb.player.onUpdate(() => {
+            if (playerCanvasRef.current !== null) {
+                const playerCtx = playerCanvasRef.current.getContext("2d");
+                if (playerCtx !== null) {
+                    playerCtx.clearRect(0, 0, scene.width, scene.height);
+                    playerCtx.fillStyle = "black";
+                    playerCtx.fillRect(0, 0, scene.width, scene.height);
+                    playerCtx.fillStyle = "crimson";
+                    playerCtx.fillRect(
+                        scene.kirb.player.pos.x,
+                        scene.kirb.player.pos.y,
+                        FRAME_SIDE * SCALE,
+                        FRAME_SIDE * SCALE
+                    );
                 }
-            });
-            scene.platformOnScreen(handleOnScreen);
-            if (
-                mapCanvasRef.current !== null &&
-                playerCanvasRef.current !== null
-            ) {
-                mapCanvasRef.current.width = scene.width;
-                mapCanvasRef.current.height = scene.height;
-                playerCanvasRef.current.height = scene.height;
-                playerCanvasRef.current.width = scene.width;
             }
+        }));
+
+        controllers = controllers.concat(...scene.platformOnScreen(handleOnScreen));
+        
+        if (mapCanvasRef.current !== null && playerCanvasRef.current !== null) {
+            mapCanvasRef.current.width = scene.width;
+            mapCanvasRef.current.height = scene.height;
+            playerCanvasRef.current.height = scene.height;
+            playerCanvasRef.current.width = scene.width;
         }
-    }, [scene]);
+
+        return (() => {
+            controllers.forEach(controller => controller.cancel());
+        })
+    }, []);
 
     return (
-        <div className="mini-map-container">
+        <div className="mini-map-container" style={{ opacity: opacity }}>
             <canvas
                 style={{ width: "100%", height: "100%", position: "absolute" }}
                 ref={playerCanvasRef}
