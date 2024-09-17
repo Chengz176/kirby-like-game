@@ -21,7 +21,7 @@ export default function RoundsScreen(this: any) {
     const [seed, setSeed] = useState<number>(-1);
     const [hp, setHp] = useState<number>();
     const [numJump, setNumJump] = useState<number>(0);
-    const [pause, setPause] = useState<boolean>(false);
+    const [pause, setPause] = useState<boolean>(true);
     const [miniMap, setMiniMap] = useState<boolean>(true);
     const [info, setInfo] = useState<boolean>(true);
     const [screenshot, setScreenshot] = useState<string>("");
@@ -113,6 +113,7 @@ export default function RoundsScreen(this: any) {
         return () => {
             k.quit();
             setRounds((prevRounds) => prevRounds - 1);
+            togglePause();
             containerRef.current?.removeChild(
                 document.getElementsByTagName("canvas")[0]
             );
