@@ -10,11 +10,10 @@ import { BACKGROUND_COLOR, FRAME_SIDE, SCALE } from "./constants";
 import { EventController, KaboomCtx } from "kaboom";
 import { Coord2D, Map } from "./definitions";
 
-export async function defineScene(
+export async function defineRoundScene(
     k: KaboomCtx,
-    sceneName: string,
     onNextScene: () => void,
-    seed?: number,
+    seed?: number
 ) {
     const { map, spawnPoints } = await makeMap(k, seed);
 
@@ -24,10 +23,10 @@ export async function defineScene(
         map.width,
         map.height
     );
-    
+
     const scene = new Scene(k, kirb, map);
 
-    k.scene(sceneName, () => {
+    k.scene("rounds", () => {
         k.setGravity(2100);
         k.setBackground(k.Color.fromHex(BACKGROUND_COLOR));
 
@@ -54,7 +53,7 @@ export async function defineScene(
             if (nextScene === "loading") {
                 onNextScene();
             }
-        })
+        });
     });
 
     return scene;
@@ -70,7 +69,7 @@ export function defineLoadingScene(k: KaboomCtx) {
                 k.width() - 2 * FRAME_SIDE * SCALE,
                 k.height() - FRAME_SIDE * SCALE
             ),
-            k.state("idle", ["idle", "inhale"]),
+            k.state("inhale", ["idle", "inhale"]),
         ]);
 
         const inhaleEffect = k.add([
@@ -91,13 +90,12 @@ export function defineLoadingScene(k: KaboomCtx) {
         });
 
         kirb.onStateEnter("inhale", () => {
-            k.wait(1, () => kirb.enterState("idle"));
+            k.wait(0.5, () => kirb.enterState("idle"));
             kirb.play("kirbInhaling");
             inhaleEffect.opacity = 1;
         });
     });
 }
-
 
 export class Scene {
     #k: KaboomCtx;
@@ -105,7 +103,7 @@ export class Scene {
     #map: Map;
     #width: number;
     #height: number;
-    
+
     constructor(k: KaboomCtx, kirb: PlayerEntity, map: Map) {
         this.#kirb = kirb;
         this.#map = map;
@@ -132,33 +130,36 @@ export class Scene {
 
     pause() {
         this.kirb.player.paused = true;
-        this.#k.get('enemy').forEach(enemy => {
+        this.#k.get("enemy").forEach((enemy) => {
             enemy.paused = true;
-        })
+        });
         this.kirb.pauseControl();
     }
 
     resume() {
         this.kirb.player.paused = false;
-        this.#k.get('enemy').forEach(enemy => {
+        this.#k.get("enemy").forEach((enemy) => {
             enemy.paused = false;
-        })
+        });
         this.kirb.resumeControl();
     }
 
     platformOnScreen(handleOnScreen: (pos: Coord2D) => void) {
         const controls: EventController[] = [];
-        this.#map.get('levelLayer')[0].get('platformTile').forEach(platform => {
-            const control = platform.onEnterScreen(() => {
-                control.cancel();
-                const pos = {
-                    x: platform.pos.x * SCALE,
-                    y: platform.pos.y * SCALE
-                }
-                handleOnScreen(pos);
+        this.#map
+            .get("levelLayer")[0]
+            .get("platformTile")
+            .forEach((platform) => {
+                const control = platform.onEnterScreen(() => {
+                    control.cancel();
+                    const pos = {
+                        x: platform.pos.x * SCALE,
+                        y: platform.pos.y * SCALE,
+                    };
+                    handleOnScreen(pos);
+                });
+                controls.push(control);
             });
-            controls.push(control);
-        })
 
         return controls;
     }
