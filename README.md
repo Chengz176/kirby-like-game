@@ -1,6 +1,6 @@
 # Kirb Run
 ## Description
-Kirb Run is a Kirby-styled game implemented with [TypeScript](https://www.typescriptlang.org/), [Kaboom.js](https://kaboomjs.com/), and [React](https://react.dev/), and built with [Vite](https://vitejs.dev/). This project was based on the repo and tutorial[[2](https://github.com/Chengz176/kirby-style-game#references)] created by [JSLegend](https://github.com/JSLegendDev), and additional features and modifications were implemented. The main purpose of this project is to learn and have some experience on TypeScript and different packages, frameworks, and algorithms.
+Kirb Run is a Kirby-like game implemented with [TypeScript](https://www.typescriptlang.org/), [Kaboom.js](https://kaboomjs.com/), and [React](https://react.dev/), and built with [Vite](https://vitejs.dev/). This project was based on the repo and tutorial[[2](https://github.com/Chengz176/kirby-style-game#references)] created by [JSLegend](https://github.com/JSLegendDev), and additional features and modifications were implemented. The main purpose of this project is to learn and have some experience on TypeScript and different packages, frameworks, and algorithms.
 
 ## Details About the Game
 - Spritesheet is from the repo created by JSLegend
